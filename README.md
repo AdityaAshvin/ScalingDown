@@ -33,9 +33,54 @@ project-root/
 │
 ├── config/
 │   ├── carc_setup.sh            # Script for setting up the environment on CARC
-│   ├── lora_config.json         # Configuration file for LoRA parameters
-│   └── hyperparameters.yaml     # YAML file with default hyperparameters for training
+│   ├── environment.yaml         # YAML file with Conda environment variables
+│   ├── hyperparameters.yaml     # YAML file with default hyperparameters for training
+|   └── lora_config.json         # Configuration file for LoRA parameters
 │
 ├── .gitignore                   # Ignore sensitive data, unnecessary system files, etc.
 ├── README.md                    # Overview of the repository, quick start, instructions
 └── LICENSE                      # License for the project
+```
+
+## Installing Conda
+
+After cloning in the repository, create the Conda environment using:
+```text
+conda env create -f /<path to SCALINGDOWN repo>/config/environment.yml
+```
+Then activate the environment using:
+```text
+conda activate scalingDownEnv
+```
+At this point the environment should be set up with the following packages:
+```text
+cudatoolkit=11.2
+cudnn=8.1
+matplotlib
+numpy
+pandas
+tensorflow
+```
+
+## Path Variables
+We'll need to figure out if the project will rely on specific environment variables, and if so, set them
+manually. This might be a better option than hardcoding them into the environment.yml file. 
+
+## GPU Support
+It will be important to ensure that TensorFlow is set up for GPU support, since CARC has GPUs available. 
+We can verify this with the following
+```text
+import tensorflow as tf
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+```
+## Downloading Datasets
+Here's some example code for later for downloading datasets in Python:
+```text
+import requests
+
+url = "https://example.com/dataset.zip"
+response = requests.get(url)
+
+with open("dataset.zip", "wb") as file:
+    file.write(response.content)
+```
