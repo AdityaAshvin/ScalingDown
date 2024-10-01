@@ -54,12 +54,29 @@ conda activate scalingDownEnv
 ```
 At this point the environment should be set up with the following packages:
 ```text
-cudatoolkit=11.2
-cudnn=8.1
+cudatoolkit (version 11.8)
+cudnn (version 8.9.2.26)
 matplotlib
 numpy
 pandas
 tensorflow
+```
+
+To add more packages into the environment, use (numpy and tensorflow used as examples):
+```text
+conda install numpy tensorflow
+```
+
+To remove packages from the environment, use:
+
+```text
+conda remove numpy
+```
+
+Once you have added or removed packages from the environment, use:
+
+```text
+conda env export > <path to where you want the yaml file>/environment.yml
 ```
 
 ## Path Variables
