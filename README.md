@@ -59,6 +59,7 @@ cudnn (version 8.9.2.26)
 matplotlib
 numpy
 pandas
+pytorch
 tensorflow
 ```
 
