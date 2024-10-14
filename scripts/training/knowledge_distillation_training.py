@@ -5,8 +5,20 @@ from transformers import AutoModelForSeq2SeqLM, AutoModelForCausalLM
 from torch import nn, optim
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
-from scripts.data_preprocessing.data_preprocessing_aqua import get_preprocessed_data
 
+import os
+import importlib
+
+importlib.invalidate_caches()
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+sys.path.append(project_root)
+
+
+scripts_dir = os.path.join(project_root, 'scripts', 'data_preprocessing')
+
+
+from scripts.data_preprocessing.data_preprocessing_aqua import get_preprocessed_data
 
 def load_train_data(train_data_path):
     preprocessed_data = torch.load(train_data_path, weights_only=True)
@@ -30,7 +42,7 @@ class TeacherStudentDataset(torch.utils.data.Dataset):
         return student_input, teacher_input
 
 
-def main(epoch_num, batch_size=6, use_gpu=False, subset_ratio=1.0):
+def main(epoch_num, batch_size=6, use_gpu=True, subset_ratio=1.0):
     # in case of loading from file
     # train_student_inputs, train_teacher_inputs = load_train_data(train_data_path)
     print("Preprocessing AQuA Dataset...")
