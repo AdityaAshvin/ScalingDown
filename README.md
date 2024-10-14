@@ -54,6 +54,7 @@ conda activate scalingDownEnv
 ```
 At this point the environment should be set up with the following packages:
 ```text
+conda-forge
 cudatoolkit (version 11.8)
 cudnn (version 8.9.2.26)
 matplotlib
@@ -61,6 +62,7 @@ numpy
 pandas
 pytorch
 tensorflow
+transformers
 ```
 
 To add more packages into the environment, use (numpy and tensorflow used as examples):
