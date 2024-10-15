@@ -45,11 +45,11 @@ project-root/
 ## Installing Conda
 
 After cloning in the repository, create the Conda environment using:
-```text
+```shell
 conda env create -f /<path to SCALINGDOWN repo>/config/environment.yml
 ```
 Then activate the environment using:
-```text
+```shell
 conda activate scalingDownEnv
 ```
 At this point the environment should be set up with the following packages:
@@ -63,20 +63,25 @@ tensorflow
 ```
 
 To add more packages into the environment, use (numpy and tensorflow used as examples):
-```text
+```shell
 conda install numpy tensorflow
 ```
 
 To remove packages from the environment, use:
 
-```text
+```shell
 conda remove numpy
 ```
 
 Once you have added or removed packages from the environment, use:
 
-```text
+```shell
 conda env export > <path to where you want the yaml file>/environment.yml
+```
+
+Update the environment (removing build), use:
+```shell
+conda env export --no-builds > environment.yml
 ```
 
 ## Path Variables
@@ -86,13 +91,13 @@ manually. This might be a better option than hardcoding them into the environmen
 ## GPU Support
 It will be important to ensure that TensorFlow is set up for GPU support, since CARC has GPUs available. 
 We can verify this with the following
-```text
+```python
 import tensorflow as tf
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 ```
 ## Downloading Datasets
 Here's some example code for later for downloading datasets in Python:
-```text
+```python
 import requests
 
 url = "https://example.com/dataset.zip"
