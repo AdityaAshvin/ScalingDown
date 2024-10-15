@@ -62,7 +62,7 @@ def main(epoch_num, batch_size=6, use_gpu=True, subset_ratio=1.0):
 
     # Device configuration
     device = torch.device("cuda" if use_gpu and torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
+    print(f"GPU mode is {'enabled' if use_gpu else 'disabled'}. Using device: {device}")
 
     print(f"Loading student model...")
     student_model = AutoModelForSeq2SeqLM.from_pretrained('google-t5/t5-small').to(device)
@@ -81,7 +81,6 @@ def main(epoch_num, batch_size=6, use_gpu=True, subset_ratio=1.0):
 
     # Training loop
     for epoch in range(epoch_num):
-        print(f"Training epoch#{epoch + 1}...")
         epoch_loss = 0
 
         for batch_idx, (student_input, teacher_input) in enumerate(
@@ -98,16 +97,13 @@ def main(epoch_num, batch_size=6, use_gpu=True, subset_ratio=1.0):
             for teacher_name, teacher_model in teacher_models.items():
                 teacher_input_ids = teacher_input[teacher_name]['input_ids'].squeeze(1).to(device)
                 teacher_attention_mask = teacher_input[teacher_name]['attention_mask'].squeeze(1).to(device)
-                print(f"Teacher: {teacher_name}")
-                print(f"Teacher input IDs shape: {teacher_input_ids.shape}")
-                print(f"Teacher attention mask shape: {teacher_attention_mask.shape}")
+
                 with torch.no_grad():
                     teacher_outputs[teacher_name] = teacher_model(teacher_input_ids,
                                                                   attention_mask=teacher_attention_mask).logits
 
             # Forward pass through student model (including decoder input)
-            print(f"Student input IDs shape: {student_input_ids.shape}")
-            print(f"Student attention mask shape: {student_attention_mask.shape}")
+
             student_output = student_model(student_input_ids, attention_mask=student_attention_mask,
                                            decoder_input_ids=student_decoder_input_ids)
             student_answer_logits = student_output.logits
@@ -128,15 +124,20 @@ def main(epoch_num, batch_size=6, use_gpu=True, subset_ratio=1.0):
                                                          attention_mask=student_rationale_attention_mask,
                                                          decoder_input_ids=student_decoder_input_ids).logits
 
-                # Resize the outputs to match sequence lengths
-                max_seq_length = max(student_rationale_output.size(1), teacher_output.size(1))
-                padded_student_rationale_output = nn.functional.pad(student_rationale_output,
-                                                                    (0, 0, 0,
-                                                                     max_seq_length - student_rationale_output.size(1)))
-                padded_teacher_output = nn.functional.pad(teacher_output,
-                                                          (0, 0, 0, max_seq_length - teacher_output.size(1)))
-                rationale_loss = rationale_loss_fn(padded_student_rationale_output, padded_teacher_output)
-                rationale_losses.append(rationale_loss)
+            # equalize sequence size
+            min_seq_length = min(student_rationale_output.size(1), teacher_output.size(1))
+            truncated_student_rationale_output = student_rationale_output[:, :min_seq_length, :]
+            truncated_teacher_output = teacher_output[:, :min_seq_length, :]
+            # equalize vocab size
+            # Note that the "vocab" of teacher and student might not be the same space (need truncation)
+            common_vocab_size = min(truncated_student_rationale_output.size(-1), truncated_teacher_output.size(-1))
+            aligned_student_output = truncated_student_rationale_output[:, :, :common_vocab_size]
+            aligned_teacher_output = truncated_teacher_output[:, :, :common_vocab_size]
+            flattened_student_output = aligned_student_output.reshape(-1)
+            flattened_teacher_output = aligned_teacher_output.reshape(-1)
+            rationale_loss = rationale_loss_fn(flattened_student_output, flattened_teacher_output)
+
+            rationale_losses.append(rationale_loss)
 
             # Combine rationale losses (averaging over multiple teachers)
             total_rationale_loss = torch.stack(rationale_losses).mean()
@@ -160,4 +161,4 @@ def main(epoch_num, batch_size=6, use_gpu=True, subset_ratio=1.0):
 #     subset_ratio = float(sys.argv[3])  # Set the subset ratio (e.g., 0.5 = 50% of the dataset)
 #     main(epoch_num, batch_size=2, use_gpu=use_gpu, subset_ratio=subset_ratio)
 
-main(10, 6, False, 0.1)
+main(2, 10, True, 0.005)
