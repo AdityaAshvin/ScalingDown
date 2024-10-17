@@ -47,10 +47,6 @@ def preprocess_data_for_models(df, max_length=256):
         student_inputs.append({
             'input_ids': student_question_encoding['input_ids'],
             'attention_mask': student_question_encoding['attention_mask'],
-            'rationale_ids': student_rationale_encoding['input_ids'],
-            'rationale_attention_mask': student_rationale_encoding['attention_mask'],
-            'decoder_input_ids': decoder_input_encoding['input_ids'],
-            'correct_index': ord(row['correct']) - ord('A')  # Assumes answers are in A, B, C, etc.
         })
 
         for teacher_name, tokenizer in teacher_tokenizers.items():
@@ -66,10 +62,6 @@ def preprocess_data_for_models(df, max_length=256):
             teacher_inputs[teacher_name].append({
                 'input_ids': question_encoding['input_ids'],
                 'attention_mask': question_encoding['attention_mask'],
-                'rationale_ids': rationale_encoding['input_ids'],
-                'rationale_attention_mask': rationale_encoding['attention_mask'],
-                'decoder_input_ids': decoder_input_encoding['input_ids'],
-                'correct_index': ord(row['correct']) - ord('A')
             })
 
     return teacher_inputs, student_inputs

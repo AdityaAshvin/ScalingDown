@@ -33,19 +33,8 @@ class TeacherStudentDataset(torch.utils.data.Dataset):
         return student_input, teacher_input
 
 
-def main(epoch_num, batch_size=6, use_gpu=False, subset_ratio=1.0):
-    """
-    Main function to perform knowledge distillation by training a student model using teacher models' guidance.
+def setup(batch_size=6, use_gpu=False, subset_ratio=1.0):
 
-    Args:
-    - epoch_num: Number of training epochs.
-    - batch_size: Number of samples per batch.
-    - use_gpu: Boolean indicating whether to use GPU or CPU.
-    - subset_ratio: Ratio of dataset to be used during training (for testing with smaller datasets).
-
-    The function pre-processes the AQuA dataset, sets up the training loop, computes losses, and performs
-    knowledge distillation using student and teacher models.
-    """
     # Preprocess the dataset
     print("Preprocessing AQuA Dataset...")
     pre_processed_data = get_preprocessed_data()
@@ -69,13 +58,18 @@ def main(epoch_num, batch_size=6, use_gpu=False, subset_ratio=1.0):
     # Load student model
     print(f"Loading student model...")
     student_model = AutoModelForSeq2SeqLM.from_pretrained('google-t5/t5-small').to(device)
-
-    # Load teacher models
-    print(f"Loading teacher models...")
-    teacher_models = {
-        'llemma': AutoModelForCausalLM.from_pretrained("EleutherAI/llemma_7b").to(device),
-        'gptneo': AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-neo-2.7B").to(device)
+    
+    teacher_model_names = {
+        'llemma': "EleutherAI/llemma_7b",
+        'gptneo': "EleutherAI/gpt-neo-2.7B"
     }
+
+    # # Load teacher models
+    # print(f"Loading teacher models...")
+    # teacher_models = {
+    #     'llemma': AutoModelForCausalLM.from_pretrained("EleutherAI/llemma_7b").to(device),
+    #     'gptneo': AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-neo-2.7B").to(device)
+    # }
 
     # Loss functions
     answer_loss_fn = nn.CrossEntropyLoss()
@@ -84,7 +78,26 @@ def main(epoch_num, batch_size=6, use_gpu=False, subset_ratio=1.0):
     # Optimizer for student model
     optimizer = optim.AdamW(student_model.parameters(), lr=5e-5)
 
-    # Training loop
+    return student_model,teacher_model_names, train_loader, device, answer_loss_fn, rationale_loss_fn, optimizer
+
+
+def train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_model, train_loader, device, answer_loss_fn, rationale_loss_fn, optimizer):    
+    """
+    Training function to perform knowledge distillation by training a student model using teacher models' guidance.
+
+    Args:
+    - epoch_num: Number of training epochs.
+    - batch_size: Number of samples per batch.
+    - use_gpu: Boolean indicating whether to use GPU or CPU.
+    - subset_ratio: Ratio of dataset to be used during training (for testing with smaller datasets).
+
+    The function pre-processes the AQuA dataset, sets up the training loop, computes losses, and performs
+    knowledge distillation using student and teacher models.
+    """
+
+    print(f"Loading {teacher_name} teacher model...")
+    teacher_model = AutoModelForCausalLM.from_pretrained(teacher_model_path).to(device)
+
     for epoch in range(epoch_num):
         epoch_loss = 0
         for batch_idx, (student_input, teacher_input) in enumerate(
@@ -93,32 +106,28 @@ def main(epoch_num, batch_size=6, use_gpu=False, subset_ratio=1.0):
             # Move student inputs to the device (CUDA/CPU)
             student_input_ids = student_input['input_ids'].squeeze(1).to(device)
             student_attention_mask = student_input['attention_mask'].squeeze(1).to(device)
-            student_rationale_ids = student_input['rationale_ids'].squeeze(1).to(device)
-            student_rationale_attention_mask = student_input['rationale_attention_mask'].squeeze(1).to(device)
-            student_decoder_input_ids = student_input['decoder_input_ids'].squeeze(1).to(device)
 
             # Forward pass through teacher models
             teacher_outputs = {}
-            for teacher_name, teacher_model in teacher_models.items():
-                teacher_input_ids = teacher_input[teacher_name]['input_ids'].squeeze(1).to(device)
-                teacher_attention_mask = teacher_input[teacher_name]['attention_mask'].squeeze(1).to(device)
-                with torch.no_grad():  # No gradients needed for teacher models
-                    teacher_outputs[teacher_name] = teacher_model(teacher_input_ids,
-                                                                  attention_mask=teacher_attention_mask).logits
+
+            teacher_input_ids = teacher_input[teacher_name]['input_ids'].squeeze(1).to(device)
+            teacher_attention_mask = teacher_input[teacher_name]['attention_mask'].squeeze(1).to(device)
+            with torch.no_grad():  # No gradients needed for teacher models
+                teacher_logits = teacher_model(teacher_input_ids, attention_mask=teacher_attention_mask).logits
+                teacher_labels = torch.argmax(teacher_logits, dim=-1)  # Get predicted token ids from teacher logits
 
             # Forward pass through student model (including decoder input)
-            student_output = student_model(student_input_ids, attention_mask=student_attention_mask,
-                                           decoder_input_ids=student_decoder_input_ids)
+            student_output = student_model(student_input_ids, attention_mask=student_attention_mask)
             student_answer_logits = student_output.logits
 
             # Calculate Answer Loss (CrossEntropy)
             logits = student_answer_logits.view(-1, student_answer_logits.size(-1))
-            labels = student_decoder_input_ids.view(-1)
+            labels = teacher_labels.view(-1)
             answer_loss = answer_loss_fn(logits, labels)
 
             # Rationale distillation loss (student mimics teacher rationale logits)
             rationale_losses = []
-            for teacher_name, teacher_output in teacher_outputs.items():
+            for teacher_output in teacher_outputs.items():
                 student_rationale_output = student_model(student_rationale_ids,
                                                          attention_mask=student_rationale_attention_mask,
                                                          decoder_input_ids=student_decoder_input_ids).logits
@@ -158,6 +167,9 @@ if __name__ == "__main__":
     batch_size = int(sys.argv[2])
     use_gpu = sys.argv[3].lower() == 'true'
     subset_ratio = float(sys.argv[4])
-    main(epoch_num, batch_size, use_gpu, subset_ratio)
+    student_model, teacher_model_names, train_loader, device, answer_loss_fn, rationale_loss_fn, optimizer = setup(batch_size, use_gpu, subset_ratio)
+    for teacher_name, teacher_model_path in teacher_model_names.items():
+        train_with_teacher(epoch_num, student_model, teacher_name, teacher_model_path, student_model, train_loader, device, answer_loss_fn, rationale_loss_fn, optimizer)
+
 
 # main(2, 10, False, 0.005)
