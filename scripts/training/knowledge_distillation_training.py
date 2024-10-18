@@ -2,7 +2,12 @@ import sys
 import torch
 import random
 import os
-from transformers import AutoModelForSeq2SeqLM, AutoModelForCausalLM, AutoTokenizer, T5Tokenizer
+from transformers import(
+    AutoModelForSeq2SeqLM, 
+    AutoModelForCausalLM, 
+    AutoTokenizer, 
+    T5Tokenizer
+)
 from torch import nn, optim
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
@@ -23,16 +28,16 @@ for tokenizer in teacher_tokenizers.values():
 class TeacherStudentDataset(torch.utils.data.Dataset):
     """
     A custom dataset class for teacher-student knowledge distillation.
-
-    Args:
-    - student_inputs: Preprocessed inputs for the student model.
-    - teacher_inputs: Preprocessed inputs for the teacher models.
-
-    Returns:
-    - __getitem__: Returns a dictionary with student inputs and corresponding teacher inputs.
     """
 
     def __init__(self, student_inputs, teacher_inputs):
+        """
+        Initializes the dataset with student and teacher inputs.
+
+        Args:
+            student_inputs (list): List of student input encodings.
+            teacher_inputs (dict): Dictionary mapping teacher names to their input encodings.
+        """
         self.student_inputs = student_inputs
         self.teacher_inputs = teacher_inputs
 
@@ -43,6 +48,43 @@ class TeacherStudentDataset(torch.utils.data.Dataset):
         student_input = self.student_inputs[idx]
         teacher_input = {name: self.teacher_inputs[name][idx] for name in self.teacher_inputs}
         return student_input, teacher_input
+
+
+def custom_collate_fn(batch):
+    student_batch = [item[0] for item in batch]
+    teacher_batch = [item[1] for item in batch]
+
+    # Student inputs
+    student_input_ids = [item['input_ids'].squeeze(0) for item in student_batch]
+    student_attention_masks = [item['attention_mask'].squeeze(0) for item in student_batch]
+
+    student_input_ids = torch.nn.utils.rnn.pad_sequence(
+        student_input_ids, batch_first=True, padding_value=t5_tokenizer.pad_token_id)
+    student_attention_masks = torch.nn.utils.rnn.pad_sequence(
+        student_attention_masks, batch_first=True, padding_value=0)
+
+    student_inputs = {
+        'input_ids': student_input_ids,
+        'attention_mask': student_attention_masks
+    }
+
+    # Teacher inputs
+    teacher_inputs = {}
+    for teacher_name in teacher_tokenizers.keys():
+        teacher_input_ids = [item[teacher_name]['input_ids'].squeeze(0) for item in teacher_batch]
+        teacher_attention_masks = [item[teacher_name]['attention_mask'].squeeze(0) for item in teacher_batch]
+
+        teacher_input_ids = torch.nn.utils.rnn.pad_sequence(
+            teacher_input_ids, batch_first=True, padding_value=teacher_tokenizers[teacher_name].pad_token_id)
+        teacher_attention_masks = torch.nn.utils.rnn.pad_sequence(
+            teacher_attention_masks, batch_first=True, padding_value=0)
+
+        teacher_inputs[teacher_name] = {
+            'input_ids': teacher_input_ids,
+            'attention_mask': teacher_attention_masks
+        }
+
+    return student_inputs, teacher_inputs
 
 
 def setup(batch_size=6, use_gpu=False, subset_ratio=1.0):
@@ -61,7 +103,7 @@ def setup(batch_size=6, use_gpu=False, subset_ratio=1.0):
 
     # Create DataLoader from the subset dataset
     train_dataset = Subset(TeacherStudentDataset(train_student_inputs, train_teacher_inputs), indices)
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=custom_collate_fn)
 
     # Configure device (GPU or CPU)
     device = torch.device("cuda" if use_gpu and torch.cuda.is_available() else "cpu")
@@ -74,7 +116,6 @@ def setup(batch_size=6, use_gpu=False, subset_ratio=1.0):
     except Exception as e:
         print(f"Error loading student model: {e}")
         exit(1)
-    # student_model.resize_token_embeddings(len(t5_tokenizer))
 
     teacher_model_names = {
         'llemma': "EleutherAI/llemma_7b",
@@ -89,8 +130,7 @@ def setup(batch_size=6, use_gpu=False, subset_ratio=1.0):
     
     return student_model, teacher_model_names, train_loader, device, optimizer
 
-# def train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_model, train_loader, device, answer_loss_fn, rationale_loss_fn, optimizer):    
-def train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_model, train_loader, device, optimizer, start_epoch=0):
+def train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_model, train_loader, device, optimizer, start_epoch=0, save_interval=500):
     """
     Training function to perform knowledge distillation by training a student model using teacher models' guidance.
 
@@ -113,17 +153,24 @@ def train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_mode
     teacher_tokenizer = teacher_tokenizers[teacher_name]
     teacher_model.resize_token_embeddings(len(teacher_tokenizer))
 
+    # Initialize variables to track training progress
+    total_batches = len(train_loader)
+    global_step = 0
+
     for epoch in range(start_epoch, epoch_num):
         epoch_loss = 0
         for batch_idx, (student_input, teacher_input) in enumerate(
                 tqdm(train_loader, desc=f"Epoch {epoch + 1}/{epoch_num}")):
 
-            # Move student inputs to the device (CUDA/CPU)
-            student_input_ids = student_input['input_ids'].squeeze(1).to(device)
-            student_attention_mask = student_input['attention_mask'].squeeze(1).to(device)
+            # Update global step
+            global_step += 1            
 
-            teacher_input_ids = teacher_input[teacher_name]['input_ids'].squeeze(1).to(device)
-            teacher_attention_mask = teacher_input[teacher_name]['attention_mask'].squeeze(1).to(device)
+            # Move student inputs to the device (CUDA/CPU)
+            student_input_ids = student_input['input_ids'].to(device)
+            student_attention_mask = student_input['attention_mask'].to(device)
+
+            teacher_input_ids = teacher_input[teacher_name]['input_ids'].to(device)
+            teacher_attention_mask = teacher_input[teacher_name]['attention_mask'].to(device)
 
             # Generate outputs from teacher model
             with torch.no_grad():
@@ -141,7 +188,7 @@ def train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_mode
             teacher_outputs_encodings = t5_tokenizer(
                 teacher_outputs_text,
                 return_tensors='pt',
-                padding='max_length',
+                padding='longest',
                 truncation=True,
                 max_length=512
             ).input_ids.to(device)
@@ -162,52 +209,134 @@ def train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_mode
 
             epoch_loss += loss.item()
 
+            # Check if it's time to save a checkpoint
+            if global_step % save_interval == 0:
+                print(f"Saving checkpoint at epoch {epoch + 1}, batch {batch_idx + 1} (global step {global_step})")
+                save_checkpoint(student_model, optimizer, epoch + 1, global_step)
+
+
         print(f"Epoch {epoch + 1} completed. Average Loss: {epoch_loss / len(train_loader)}")
 
-        # Save model checkpoint after each epoch
-        checkpoint_dir = 'checkpoints'
-        if not os.path.exists(checkpoint_dir):
-            os.makedirs(checkpoint_dir)
-        save_path = os.path.join(checkpoint_dir, f'student_model_epoch_{epoch + 1}.pt')        
-        torch.save(student_model.state_dict(), save_path)
-        print(f"Saved model checkpoint to {save_path}")
+        # Save a checkpoint at the end of each epoch
+        print(f"Saving checkpoint at the end of epoch {epoch + 1}")
+        save_checkpoint(student_model, optimizer, epoch + 1, global_step)
+    
+    # Save final checkpoint after training
+    print("Saving final checkpoint after training completion.")
+    save_checkpoint(student_model, optimizer, epoch_num, global_step)
 
-        del teacher_model
-        del teacher_tokenizer
-        if device.type == 'cuda':
-            torch.cuda.empty_cache()
+
+    # Clear teacher model from memory
+    print(f"Removing {teacher_name} teacher model from memory...")
+    del teacher_model
+    del teacher_tokenizer
+    if device.type == 'cuda':
+        torch.cuda.empty_cache()
+
+
+def save_checkpoint(model, optimizer, epoch, global_step):
+    """
+    Saves the model and optimizer states along with training progress.
+
+    Args:
+    - model: The student model.
+    - optimizer: The optimizer.
+    - epoch: Current epoch number.
+    - global_step: Current global step (batch number).
+    - teacher_name: Name of the teacher model.
+    - final: Boolean indicating if this is the final checkpoint.
+    """
+
+    checkpoint_dir = 'checkpoints'
+    os.makedirs(checkpoint_dir, exist_ok=True)
+
+    checkpoint = {
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'epoch': epoch,
+        'global_step': global_step,
+    }
+
+    checkpoint_filename = 'student_model_latest.pt'
+
+    save_path = os.path.join(checkpoint_dir, checkpoint_filename)
+
+    # Save the checkpoint
+    torch.save(checkpoint, save_path)
+    print(f"Saved checkpoint to {save_path}")
+
+
+def load_checkpoint(model, optimizer, checkpoint_path, device):
+    """
+    Loads the model and optimizer states from a checkpoint.
+
+    Args:
+    - model: The student model.
+    - optimizer: The optimizer.
+    - checkpoint_path: Path to the checkpoint file.
+    - device: Device to map the model and optimizer states.
+
+    Returns:
+    - epoch: The epoch to resume from.
+    - global_step: The global step to resume from.
+    """
+
+    print(f"Loading checkpoint from {checkpoint_path}")
+    checkpoint = torch.load(checkpoint_path, map_location=device)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    epoch = checkpoint['epoch']
+    global_step = checkpoint['global_step']
+    print(f"Loaded checkpoint: Epoch {epoch}, Global Step {global_step}")
+    return epoch, global_step        
 
 
 if __name__ == "__main__":
+    # Parse command-line arguments
+    if len(sys.argv) < 5:
+        print("Usage: python training_script.py <epoch_num> <batch_size> <use_gpu> <subset_ratio> [save_interval]")
+        print("Example: python training_script.py 10 32 True 1.0 500")
+        sys.exit(1)
+
     epoch_num = int(sys.argv[1])
     batch_size = int(sys.argv[2])
     use_gpu = sys.argv[3].lower() == 'true'
     subset_ratio = float(sys.argv[4])
+    save_interval = int(sys.argv[5]) if len(sys.argv) > 5 else 500  # Default to saving every 500 batches
 
     student_model, teacher_model_names, train_loader, device, optimizer = setup(batch_size, use_gpu, subset_ratio)
     
-    # Check for a saved model checkpoint
-    start_epoch = 0
+    # Define the checkpoint directory
     checkpoint_dir = 'checkpoints'
-    if not os.path.exists(checkpoint_dir):
-        os.makedirs(checkpoint_dir)
-    latest_checkpoint = None
-    for file in os.listdir(checkpoint_dir):
-        if file.startswith('student_model_epoch_') and file.endswith('.pt'):
-            latest_checkpoint = file
-    if latest_checkpoint:
-        checkpoint_path = os.path.join(checkpoint_dir, latest_checkpoint)
-        print(f"Loading student model from {checkpoint_path}")
-        student_model.load_state_dict(torch.load(checkpoint_path))
-        start_epoch = int(latest_checkpoint.split('_')[-1].split('.')[0])
-        if start_epoch >= epoch_num:
-            print("Training already completed.")
-            exit()
-        print(f"Resuming training from epoch {start_epoch + 1}")
-    else:
-        print("No checkpoint found. Starting training from scratch.")
+    os.makedirs(checkpoint_dir, exist_ok=True)  # Ensure the directory exists
     
+    # Initialize training progress variables
+    start_epoch = 0
+    global_step = 0
+    latest_checkpoint_path = os.path.join(checkpoint_dir, 'student_model_latest.pt')
+
+    # Check for a saved '_latest' checkpoint
+    if os.path.exists(latest_checkpoint_path):
+        load_epoch, load_step = load_checkpoint(student_model, optimizer, latest_checkpoint_path, device)
+        start_epoch = load_epoch
+        global_step = load_step
+        print(f"Resuming training from epoch {start_epoch}, global step {global_step}")
+    else:
+        print("No '_latest' checkpoint found. Starting training from scratch.")
+
+
+    # Iterate over each teacher model for knowledge distillation
     for teacher_name, teacher_model_path in teacher_model_names.items():
-        train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_model, train_loader, device, optimizer, start_epoch)
+        train_with_teacher(
+            epoch_num=epoch_num,
+            teacher_name=teacher_name,
+            teacher_model_path=teacher_model_path,
+            student_model=student_model,
+            train_loader=train_loader,
+            device=device,
+            optimizer=optimizer,
+            start_epoch=start_epoch,
+            save_interval=save_interval
+        )
 
 # main(2, 10, False, 0.005)

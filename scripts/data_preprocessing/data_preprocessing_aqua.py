@@ -22,16 +22,16 @@ teacher_tokenizers = {
     'gptneo': gptneo_tokenizer,
 }
 
-# After adding special tokens
-t5_tokenizer.save_pretrained('tokenizers/t5_tokenizer/')
-llemma_tokenizer.save_pretrained('tokenizers/llemma_tokenizer/')
-gptneo_tokenizer.save_pretrained('tokenizers/gptneo_tokenizer/')
-
 if llemma_tokenizer.pad_token is None:
     llemma_tokenizer.pad_token = llemma_tokenizer.eos_token
 
 if gptneo_tokenizer.pad_token is None:
     gptneo_tokenizer.pad_token = gptneo_tokenizer.eos_token
+
+# After adding special tokens
+t5_tokenizer.save_pretrained('tokenizers/t5_tokenizer/')
+llemma_tokenizer.save_pretrained('tokenizers/llemma_tokenizer/')
+gptneo_tokenizer.save_pretrained('tokenizers/gptneo_tokenizer/')
 
 
 def load_aqua_data():
@@ -63,7 +63,7 @@ def preprocess_data_for_models(df, max_length=512):
         student_question_encoding = t5_tokenizer(
             question_text, 
             return_tensors='pt', 
-            padding='longest',
+            padding=False,
             truncation=True, 
             max_length=max_length
         )
@@ -80,7 +80,7 @@ def preprocess_data_for_models(df, max_length=512):
             question_encoding = tokenizer(
                 question_text, 
                 return_tensors='pt', 
-                padding='longest', 
+                padding=False, 
                 truncation=True,
                 max_length=max_length
             )
@@ -100,7 +100,6 @@ def get_preprocessed_data(save_path='preprocessed_data.pkl'):
             preprocessed_data = torch.load(f)
         return preprocessed_data
     else:
-    
         train_df, test_df, val_df = load_aqua_data()
 
         print(f"Teacher list: {', '.join(teacher_tokenizers.keys())}")
