@@ -2,7 +2,6 @@ from datasets import load_dataset
 from transformers import T5Tokenizer, AutoTokenizer
 import pandas as pd
 import os
-import pickle
 import torch
 
 special_tokens = {'additional_special_tokens': ['<ANSWER>', '<RATIONALE>']}
