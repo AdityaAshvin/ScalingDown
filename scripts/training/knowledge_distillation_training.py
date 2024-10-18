@@ -172,6 +172,11 @@ def train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_mode
         torch.save(student_model.state_dict(), save_path)
         print(f"Saved model checkpoint to {save_path}")
 
+        del teacher_model
+        del teacher_tokenizer
+        if device.type == 'cuda':
+            torch.cuda.empty_cache()
+
 
 if __name__ == "__main__":
     epoch_num = int(sys.argv[1])
