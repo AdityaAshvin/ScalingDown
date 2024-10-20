@@ -1,5 +1,5 @@
 from datasets import load_dataset
-from transformers import T5Tokenizer, AutoTokenizer
+from transformers import T5Tokenizer, AutoTokenizer, GPT2Tokenizer
 import pandas as pd
 import os
 import torch
@@ -8,14 +8,14 @@ special_tokens = {'additional_special_tokens': ['<ANSWER>', '<RATIONALE>']}
 
 # Load tokenizers
 t5_tokenizer = T5Tokenizer.from_pretrained('google-t5/t5-small')
-t5_tokenizer.add_special_tokens(special_tokens)
+# t5_tokenizer.add_special_tokens(special_tokens)
 
 
 llemma_tokenizer = AutoTokenizer.from_pretrained("EleutherAI/llemma_7b")
-llemma_tokenizer.add_special_tokens(special_tokens)
+# llemma_tokenizer.add_special_tokens(special_tokens)
 
-gptneo_tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neo-2.7B")
-gptneo_tokenizer.add_special_tokens(special_tokens)
+gptneo_tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-neo-2.7B', use_fast=True)
+# gptneo_tokenizer.add_special_tokens(special_tokens)
 
 teacher_tokenizers = {
     'llemma': llemma_tokenizer,
@@ -56,8 +56,7 @@ def preprocess_data_for_models(df, max_length=512):
         question_text = (
             f"Question: {row['question']} " 
             f"Options: {row['options']} "
-            "Please provide the answer and explain your reasoning in the following format: "
-            "<ANSWER> [Your answer here] <RATIONALE> [Your rationale here]"
+            "Please provide the answer and explain your reasoning. "
         )
 
         student_question_encoding = t5_tokenizer(

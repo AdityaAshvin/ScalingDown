@@ -1,3 +1,4 @@
+import datetime
 import sys
 import torch
 import random
@@ -151,7 +152,7 @@ def train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_mode
         print(f"Error loading teacher model: {e}")
         exit(1)        
     teacher_tokenizer = teacher_tokenizers[teacher_name]
-    teacher_model.resize_token_embeddings(len(teacher_tokenizer))
+    # teacher_model.resize_token_embeddings(len(teacher_tokenizer))
 
     # Initialize variables to track training progress
     total_batches = len(train_loader)
@@ -172,18 +173,27 @@ def train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_mode
             teacher_input_ids = teacher_input[teacher_name]['input_ids'].to(device)
             teacher_attention_mask = teacher_input[teacher_name]['attention_mask'].to(device)
 
+            print(f"Asking teacher a question at {datetime.datetime.now().strftime('%H:%M:%S')}")
+
             # Generate outputs from teacher model
             with torch.no_grad():
                 teacher_outputs_ids = teacher_model.generate(
                     input_ids=teacher_input_ids,
                     attention_mask=teacher_attention_mask,
-                    max_new_tokens=128,
-                    eos_token_id=teacher_tokenizer.eos_token_id,
+                    max_new_tokens=150,
+                    min_length=50,
+                    num_beams=5,
+                    no_repeat_ngram_size=2,
+                    early_stopping=False
                 )
+
+            print(f"Received teacher's answer at {datetime.datetime.now().strftime('%H:%M:%S')}")
 
             # Decode teacher outputs to text
             teacher_outputs_text = teacher_tokenizer.batch_decode(
-                teacher_outputs_ids, skip_special_tokens=False)
+                teacher_outputs_ids, skip_special_tokens=True)
+            
+            print(f"Teacher's output: {teacher_outputs_text}")
 
             teacher_outputs_encodings = t5_tokenizer(
                 teacher_outputs_text,
@@ -192,7 +202,10 @@ def train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_mode
                 truncation=True,
                 max_length=512
             ).input_ids.to(device)
+            
             teacher_outputs_encodings[teacher_outputs_encodings == t5_tokenizer.pad_token_id] = -100
+
+            print(f"Asking student a question at {datetime.datetime.now().strftime('%H:%M:%S')}")
 
             outputs = student_model(
                 input_ids=student_input_ids,
@@ -200,6 +213,14 @@ def train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_mode
                 labels=teacher_outputs_encodings
             )
 
+            logits = outputs.logits
+            predicted_ids = logits.argmax(dim=-1)
+            decoded_student_output = t5_tokenizer.batch_decode(predicted_ids, skip_special_tokens=True)
+            print(f"Student's output: {decoded_student_output}")
+
+            print(f"Received student's answer at {datetime.datetime.now().strftime('%H:%M:%S')}")
+
+            print(f"Beginning training of student at {datetime.datetime.now().strftime('%H:%M:%S')}")
             loss = outputs.loss
 
             # Backpropagation and optimization
@@ -208,6 +229,8 @@ def train_with_teacher(epoch_num, teacher_name, teacher_model_path, student_mode
             optimizer.step()
 
             epoch_loss += loss.item()
+
+            print(f"Completed training of student at {datetime.datetime.now().strftime('%H:%M:%S')}")
 
             # Check if it's time to save a checkpoint
             if global_step % save_interval == 0:
