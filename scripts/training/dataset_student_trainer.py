@@ -169,6 +169,12 @@ def parse_args():
         default=5,
         help="Number of folds for cross-validation. Default is 5."
     )
+    parser.add_argument(
+        '--start_fold',
+        type=int,
+        default=1,
+        help="The fold number to start from (1-based index)."
+    )
     args = parser.parse_args()
     if not 0 < args.train_pct <= 1.0:
         parser.error("train_pct must be a float between 0 and 1.")
@@ -178,6 +184,8 @@ def parse_args():
         parser.error("eval_steps must be a positive integer.")
     if args.num_folds <= 1:
         parser.error("num_folds must be an integer greater than 1.")
+    if not 1 <= args.start_fold <= args.num_folds:
+        parser.error("start_fold must be between 1 and num_folds.")
     return args
 
 def load_preprocessed_data(save_path='dataset_trainer_preprocessed_data.pkl'):
@@ -335,105 +343,110 @@ def main():
     fold_metrics = []
 
     for train_index, val_index in kf.split(dataset):
-        logger.info(f"========== Fold {fold} ==========")
+        for fold_num, (train_index, val_index) in enumerate(kf.split(dataset), start=1):
+            if fold_num < args.start_fold:
+                logger.info(f"Skipping fold {fold_num} as per start_fold argument.")
+                continue
+            fold = fold_num
+            logger.info(f"========== Fold {fold} ==========")
         
-        # Split the dataset into training and validation for this fold
-        train_dataset = dataset.select(train_index).shuffle(seed=42)  # Shuffle training dataset        
-        val_dataset = dataset.select(val_index).shuffle(seed=42)      # Shuffle validation dataset        
-        
-        logger.info(f"Training samples: {len(train_dataset)}")
-        logger.info(f"Validation samples: {len(val_dataset)}\n")
-        
-        # ======================================
-        # 7. Define Training Arguments for This Fold
-        # ======================================
-        # Create a unique output directory for each fold
-        output_dir = f'./t5_aqua_rat_finetuned_fold{fold}'
+            # Split the dataset into training and validation for this fold
+            train_dataset = dataset.select(train_index).shuffle(seed=42)  # Shuffle training dataset        
+            val_dataset = dataset.select(val_index).shuffle(seed=42)      # Shuffle validation dataset        
+            
+            logger.info(f"Training samples: {len(train_dataset)}")
+            logger.info(f"Validation samples: {len(val_dataset)}\n")
+            
+            # ======================================
+            # 7. Define Training Arguments for This Fold
+            # ======================================
+            # Create a unique output directory for each fold
+            output_dir = f'./t5_aqua_rat_finetuned_fold{fold}'
 
-        training_args = TrainingArguments(
-            output_dir=output_dir,                       # Directory to save model checkpoints
-            num_train_epochs=3,                          # Total number of training epochs
-            per_device_train_batch_size=8,               # Reduced batch size to fit GPU memory
-            gradient_accumulation_steps=2,               # To maintain effective batch size of 16
-            gradient_checkpointing=True,                 # Enable gradient checkpointing
-            warmup_steps=500,                            # Number of warmup steps for learning rate scheduler
-            weight_decay=0.01,                           # Strength of weight decay
-            logging_dir=f'./t5_aqua_rat_logs_fold{fold}',# Directory for storing logs
-            logging_steps=eval_steps,                    # Log training metrics every eval_steps
-            save_steps=save_steps,                       # Save checkpoint every save_steps
-            save_total_limit=2,                          # Keep only the latest 5 checkpoints
-            evaluation_strategy='no',                 # Enable evaluation at specific steps
-            load_best_model_at_end=False,                 # Load the best model at the end of training
-            greater_is_better=False,                     # Lower validation loss is better
-            fp16=torch.cuda.is_available(),              # Use mixed precision if available
-            per_device_eval_batch_size=1,  # Reduce batch size to minimize memory usage
-            # max_eval_samples=10,  # Limit evaluation to 10 samples
-        )
+            training_args = TrainingArguments(
+                output_dir=output_dir,                       # Directory to save model checkpoints
+                num_train_epochs=3,                          # Total number of training epochs
+                per_device_train_batch_size=8,               # Reduced batch size to fit GPU memory
+                gradient_accumulation_steps=2,               # To maintain effective batch size of 16
+                gradient_checkpointing=True,                 # Enable gradient checkpointing
+                warmup_steps=500,                            # Number of warmup steps for learning rate scheduler
+                weight_decay=0.01,                           # Strength of weight decay
+                logging_dir=f'./t5_aqua_rat_logs_fold{fold}',# Directory for storing logs
+                logging_steps=eval_steps,                    # Log training metrics every eval_steps
+                save_steps=save_steps,                       # Save checkpoint every save_steps
+                save_total_limit=2,                          # Keep only the latest 5 checkpoints
+                evaluation_strategy='no',                 # Enable evaluation at specific steps
+                load_best_model_at_end=False,                 # Load the best model at the end of training
+                greater_is_better=False,                     # Lower validation loss is better
+                fp16=torch.cuda.is_available(),              # Use mixed precision if available
+                per_device_eval_batch_size=1,  # Reduce batch size to minimize memory usage
+                # max_eval_samples=10,  # Limit evaluation to 10 samples
+            )
 
-        checkpoint = get_latest_checkpoint(output_dir)
-        if checkpoint:
-            logger.info(f"Resuming training from checkpoint: {checkpoint}")
-        else:
-            logger.info("No checkpoint found. Starting training from scratch.")
+            checkpoint = get_latest_checkpoint(output_dir)
+            if checkpoint:
+                logger.info(f"Resuming training from checkpoint: {checkpoint}")
+            else:
+                logger.info("No checkpoint found. Starting training from scratch.")
 
-        # ======================================
-        # 8. Define Data Collator
-        # ======================================
-        data_collator = DataCollatorForSeq2Seq(
-            tokenizer=tokenizer,
-            model=model,
-            padding='longest',                             # Dynamic padding to save memory
-            return_tensors='pt',
-        )
+            # ======================================
+            # 8. Define Data Collator
+            # ======================================
+            data_collator = DataCollatorForSeq2Seq(
+                tokenizer=tokenizer,
+                model=model,
+                padding='longest',                             # Dynamic padding to save memory
+                return_tensors='pt',
+            )
 
-        # ======================================
-        # 9. Initialize the CustomTrainer with Built-in Evaluation
-        # ======================================
-        trainer = CustomTrainer(
-            model=model,
-            args=training_args,
-            train_dataset=train_dataset,
-            eval_dataset=val_dataset,
-            tokenizer=tokenizer,
-            data_collator=data_collator,
-            compute_metrics=None,
-            callbacks=[],  # We'll add callbacks after initialization
-        )
+            # ======================================
+            # 9. Initialize the CustomTrainer with Built-in Evaluation
+            # ======================================
+            trainer = CustomTrainer(
+                model=model,
+                args=training_args,
+                train_dataset=train_dataset,
+                eval_dataset=val_dataset,
+                tokenizer=tokenizer,
+                data_collator=data_collator,
+                compute_metrics=None,
+                callbacks=[],  # We'll add callbacks after initialization
+            )
 
 
-        # Initialize and Add Callbacks
-        single_example_eval_callback = SingleExampleEvalCallback(eval_steps=eval_steps, validation_dataset=val_dataset)
-        single_example_eval_callback.trainer = trainer
+            # Initialize and Add Callbacks
+            single_example_eval_callback = SingleExampleEvalCallback(eval_steps=eval_steps, validation_dataset=val_dataset)
+            single_example_eval_callback.trainer = trainer
 
-        rolling_average_callback = RollingAverageCallback(window_size=20)
+            rolling_average_callback = RollingAverageCallback(window_size=20)
 
-        trainer.add_callback(single_example_eval_callback)
-        trainer.add_callback(rolling_average_callback)
+            trainer.add_callback(single_example_eval_callback)
+            trainer.add_callback(rolling_average_callback)
 
-        # ======================================
-        # 10. Start Training for This Fold
-        # ======================================
-        trainer.train(resume_from_checkpoint=checkpoint)
+            # ======================================
+            # 10. Start Training for This Fold
+            # ======================================
+            trainer.train(resume_from_checkpoint=checkpoint)
 
-        # ======================================
-        # 11. Evaluate the Model on the Validation Set
-        # ======================================
-        eval_results = trainer.evaluate()
+            # ======================================
+            # 11. Evaluate the Model on the Validation Set
+            # ======================================
+            eval_results = trainer.evaluate()
 
-        # Log the evaluation results
-        logger.info(f"Evaluation results for Fold {fold}:")
-        for key, value in eval_results.items():
-            logger.info(f"  {key}: {value}")
-        logger.info("\n")
+            # Log the evaluation results
+            logger.info(f"Evaluation results for Fold {fold}:")
+            for key, value in eval_results.items():
+                logger.info(f"  {key}: {value}")
+            logger.info("\n")
 
-        # Store metrics
-        fold_metrics.append(eval_results)
+            # Store metrics
+            fold_metrics.append(eval_results)
 
-        # Optionally, save metrics to a file
-        metrics_df = pd.DataFrame(fold_metrics)
-        metrics_df.to_csv('cross_validation_metrics.csv', index=False)
+            # Optionally, save metrics to a file
+            metrics_df = pd.DataFrame(fold_metrics)
+            metrics_df.to_csv('cross_validation_metrics.csv', index=False)
 
-        fold += 1
+            fold += 1
 
     # ======================================
     # 12. Aggregate and Report Cross-Validation Results
