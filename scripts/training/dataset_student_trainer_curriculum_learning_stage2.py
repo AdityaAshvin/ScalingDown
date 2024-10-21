@@ -161,10 +161,19 @@ class CustomTrainer(Trainer):
 class SingleExampleEvalCallback(TrainerCallback):
     """
     A custom callback to perform evaluation on a single validation example at specified intervals.
-    Logs the question, options, validation loss, and the generated answer and rationale.
+    Logs the question, options, validation loss, the dataset's answer and rationale, and the generated answer and rationale.
     Additionally, computes and outputs the average percentage of correct answers for the last 50 questions.
     """
     def __init__(self, eval_steps, validation_dataset, tokenizer, is_stage1=False):
+        """
+        Initialize the SingleExampleEvalCallback.
+
+        Args:
+            eval_steps (int): Number of training steps between each evaluation.
+            validation_dataset (Dataset): The validation dataset to sample examples from.
+            tokenizer (PreTrainedTokenizer): The tokenizer used for decoding.
+            is_stage1 (bool): Flag indicating if this is Stage 1 training.
+        """
         self.eval_steps = eval_steps
         self.validation_dataset = validation_dataset
         self.current_val_idx = 0
@@ -175,6 +184,16 @@ class SingleExampleEvalCallback(TrainerCallback):
         self.last_50_correct_answers = deque(maxlen=50)  # Rolling deque to store the last 50 results
 
     def on_log(self, args, state, control, logs=None, **kwargs):
+        """
+        Called at each logging step during training.
+
+        Args:
+            args: Training arguments.
+            state: Trainer state.
+            control: Trainer control.
+            logs (dict, optional): Log dictionary.
+        """
+        # Check if it's time to evaluate
         if logs is not None and state.global_step % self.eval_steps == 0 and state.global_step != 0:
             trainer = self.trainer
             if trainer is not None:
@@ -190,7 +209,11 @@ class SingleExampleEvalCallback(TrainerCallback):
                 label_ids = [id if id != -100 else self.tokenizer.pad_token_id for id in label_ids]
                 label_text = self.tokenizer.decode(label_ids, skip_special_tokens=True)
 
-                # Prepare inputs
+                # Extract reference rationale from the dataset's label
+                reference_rationale = extract_rationale(label_text)
+                reference_answer = extract_answer(label_text)
+
+                # Prepare inputs for the model
                 input_ids = example['input_ids'].unsqueeze(0).to(trainer.args.device)
                 attention_mask = example['attention_mask'].unsqueeze(0).to(trainer.args.device)
                 labels = example['labels'].unsqueeze(0).to(trainer.args.device)
@@ -199,18 +222,18 @@ class SingleExampleEvalCallback(TrainerCallback):
                 model = trainer.model
                 model.eval()
                 with torch.no_grad():
-                    # Compute loss
+                    # Compute loss on the validation example
                     outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
                     loss = outputs.loss.item()
 
-                    # Generate the model's answer with sampling enabled
+                    # Generate the model's answer and rationale
                     generated_ids = model.generate(
                         input_ids=input_ids,
                         attention_mask=attention_mask,
-                        max_length=80,               # Adjust as needed
-                        num_beams=3,                 # Beam search for better quality
+                        max_length=150,               # Increased to allow longer outputs
+                        num_beams=5,                  # Increased beams for better quality
                         early_stopping=True,
-                        no_repeat_ngram_size=3,
+                        no_repeat_ngram_size=2,       # Slightly reduced to allow necessary repetition
                         temperature=0.7,
                         top_k=50,
                         top_p=0.95,
@@ -218,16 +241,19 @@ class SingleExampleEvalCallback(TrainerCallback):
                     )
                     generated_text = self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)
 
-                # Extract answers
-                correct_answer = extract_answer(label_text)
-                given_answer = extract_answer(generated_text)
+                # Extract generated answer and rationale
+                generated_answer = extract_answer(generated_text)
+                generated_rationale = extract_rationale(generated_text)
 
                 # Determine if the generated answer is correct
-                is_correct = correct_answer == given_answer
+                is_correct = reference_answer == generated_answer
                 self.last_50_correct_answers.append(is_correct)  # Add result to rolling deque
 
                 # Calculate the percentage of correct answers over the last 50 questions
-                correct_percentage = (sum(self.last_50_correct_answers) / len(self.last_50_correct_answers)) * 100
+                if len(self.last_50_correct_answers) > 0:
+                    correct_percentage = (sum(self.last_50_correct_answers) / len(self.last_50_correct_answers)) * 100
+                else:
+                    correct_percentage = 0.0
 
                 # Format the metrics
                 training_loss = logs.get('loss', None)
@@ -251,11 +277,15 @@ class SingleExampleEvalCallback(TrainerCallback):
                 print(f"Rolling Validation Loss: {rolling_validation_loss}")
                 print(f"Input Question:\n{input_text}\n")
 
-                if self.is_stage1:
-                    print(f"Correct Answer: {correct_answer}")
-                    print(f"Given Answer: {given_answer}\n")
-                else:
-                    print(f"Generated Answer and Rationale:\n{generated_text}\n")
+                # Print the dataset's (reference) answer and rationale
+                print(f"Reference Answer and Rationale:")
+                print(f"Answer: {reference_answer}")
+                print(f"Rationale: {reference_rationale}\n")
+
+                # Print the student model's generated answer and rationale
+                print(f"Generated Answer and Rationale:")
+                print(f"Answer: {generated_answer}")
+                print(f"Rationale: {generated_rationale}\n")
 
                 # Output the average percentage of correct answers for the last 50 validation questions
                 print(f"Average Correct Answers (last 50): {correct_percentage:.2f}%\n")
