@@ -3,19 +3,16 @@ from scripts.training.util import extract_answer, extract_rationale
 
 class PrintSampleCallback(TrainerCallback):
     def __init__(self, tokenizer, interval_steps=500):
+        super().__init__()
         self.tokenizer = tokenizer
         self.interval_steps = interval_steps
         self.last_inputs = None  # Store the inputs of the last step
         self.last_predictions = None  # Store the predictions of the last step
 
-    def on_step_end(self, args, state, control, **kwargs):
+    def on_log(self, args, state, control, logs=None, **kwargs):
         """
-        Capture the last batch inputs and predictions at the end of each step.
+        Trigger callback to print samples at specified intervals during logging.
         """
-        # Capture the inputs and predictions from the last batch
-        self.last_inputs = kwargs.get('inputs')
-        self.last_predictions = kwargs.get('predictions')
-
         # Trigger the callback to print samples at the specified interval
         if state.global_step % self.interval_steps == 0 and state.global_step != 0:
             if self.last_inputs is not None and self.last_predictions is not None:
@@ -35,3 +32,11 @@ class PrintSampleCallback(TrainerCallback):
                 print(f"Input: {input_text}")
                 print(f"Predicted Answer: {answer}")
                 print(f"Predicted Rationale: {rationale}\n")
+
+    def on_step_end(self, args, state, control, **kwargs):
+        """
+        Capture the last batch inputs and predictions at the end of each step.
+        """
+        # Capture the inputs and predictions from the last batch
+        self.last_inputs = kwargs.get('inputs')
+        self.last_predictions = kwargs.get('predictions')

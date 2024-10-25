@@ -90,7 +90,7 @@ def main():
     # Use portion of dataset
     if data_portion < 1.0:
         num_train_examples = max(5, int(len(train_dataset) * data_portion))
-        num_val_examples = max(100, int(len(val_dataset) * data_portion))
+        num_val_examples = max(200, int(len(val_dataset) * data_portion))
         train_dataset = train_dataset.shuffle(seed=42).select(range(num_train_examples))
         val_dataset = val_dataset.shuffle(seed=42).select(range(num_val_examples))
 
@@ -261,9 +261,12 @@ def main():
         interval_steps=500
     )
 
-    # Define compute_metrics function
+
     def compute_metrics(eval_pred):
         predictions, labels = eval_pred
+
+        # Convert predictions to a flat tensor
+        predictions = torch.cat([torch.tensor(pred) for pred in predictions])
 
         # Replace -100 in labels as we do in compute_loss
         labels = np.where(labels != -100, labels, student_tokenizer.pad_token_id)
@@ -368,7 +371,7 @@ def main():
         f.write(f"Student Model Accuracy: {student_accuracy*100:.2f}%\n")
 
         # Write validation examples
-        num_examples_to_show = min(20, len(val_dataset))
+        num_examples_to_show = min(30, len(val_dataset))
         f.write(f"\nFirst {num_examples_to_show} Validation Examples:\n")
         for idx in range(num_examples_to_show):
             example = val_dataset[idx]
