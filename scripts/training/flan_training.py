@@ -24,7 +24,11 @@ from scripts.training.util import extract_answer, extract_rationale
 from scripts.data_preprocessing.data_preprocessing_flan import get_preprocessed_data
 
 # Set up logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    filename='flan_training_progress.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+)
 logger = logging.getLogger(__name__)
 
 def set_seed(seed=42):
@@ -54,6 +58,7 @@ def parse_args():
     return args
 
 def main():
+    logger.info("Starting script...")
     # Set random seed
     set_seed(42)
 
@@ -83,9 +88,11 @@ def main():
     hyperparams['greater_is_better'] = bool(hyperparams['greater_is_better'])
     hyperparams['save_strategy'] = hyperparams.get('save_strategy', 'steps')
     hyperparams['hidden_weight'] = float(hyperparams.get('hidden_weight', 0.5))
-
+    logger.info("Loaded hyperparameters from config file.")
     # Load data
     train_dataset, val_dataset = get_preprocessed_data(save_dir='')
+    logger.info(f"Loaded training dataset with {len(train_dataset)} examples.")
+    logger.info(f"Loaded validation dataset with {len(val_dataset)} examples.")
 
     # Use portion of dataset
     if data_portion < 1.0:
@@ -93,6 +100,9 @@ def main():
         num_val_examples = max(200, int(len(val_dataset) * data_portion))
         train_dataset = train_dataset.shuffle(seed=42).select(range(num_train_examples))
         val_dataset = val_dataset.shuffle(seed=42).select(range(num_val_examples))
+
+    logger.info(f"Using {len(train_dataset)} training examples after applying data_portion={data_portion}.")
+    logger.info(f"Using {len(val_dataset)} validation examples after applying data_portion={data_portion}.")
 
     # Check if datasets are empty
     if len(train_dataset) == 0:
@@ -113,8 +123,11 @@ def main():
 
     # Generate teacher outputs for training data
     print("Generating teacher outputs for training data...")
+    logger.info("Generating teacher outputs for training data...")
     teacher_outputs = []
-    for example in tqdm(train_dataset, desc="Processing training data"):
+    for idx, example in enumerate(tqdm(train_dataset, desc="Processing training data")):
+        if idx % 500 == 0:
+            logger.info(f"Processed {idx} training examples.")
         input_ids = torch.tensor(example['input_ids']).unsqueeze(0).to(device)
         attention_mask = torch.tensor(example['attention_mask']).unsqueeze(0).to(device)
         with torch.no_grad():
@@ -132,6 +145,7 @@ def main():
     train_dataset = train_dataset.add_column('labels', teacher_outputs)
 
     # Generate teacher outputs for validation data and collect actual answers
+    logger.info("Generating teacher outputs for validation data...")
     print("Generating teacher outputs for validation data...")
     val_teacher_outputs = []
     val_actual_answers = []
@@ -139,6 +153,8 @@ def main():
     val_teacher_rationales = []
     teacher_predictions = []
     for idx, example in enumerate(tqdm(val_dataset, desc="Processing validation data")):
+        if idx % 100 == 0:
+            logger.info(f"Processed {idx} validation examples.")
         input_ids = torch.tensor(example['input_ids']).unsqueeze(0).to(device)
         attention_mask = torch.tensor(example['attention_mask']).unsqueeze(0).to(device)
         with torch.no_grad():
@@ -161,15 +177,15 @@ def main():
         teacher_predictions.append(teacher_answer)
 
         # Print the teacher's rationale vs actual rationale for the first few examples
-        if idx < 5:
-            input_text = teacher_tokenizer.decode(example['input_ids'], skip_special_tokens=True)
-            print(f"Example {idx + 1}:")
-            print(f"Input: {input_text}")
-            print(f"Actual Answer: {example['correct']}")
-            print(f"Actual Rationale: {example['rationale']}")
-            print(f"Teacher's Output: {output_text}")
-            print(f"Teacher's Answer: {teacher_answer}")
-            print(f"Teacher's Rationale: {teacher_rationale}\n")
+        # if idx < 5:
+        #     input_text = teacher_tokenizer.decode(example['input_ids'], skip_special_tokens=True)
+        #     print(f"Example {idx + 1}:")
+        #     print(f"Input: {input_text}")
+        #     print(f"Actual Answer: {example['correct']}")
+        #     print(f"Actual Rationale: {example['rationale']}")
+        #     print(f"Teacher's Output: {output_text}")
+        #     print(f"Teacher's Answer: {teacher_answer}")
+        #     print(f"Teacher's Rationale: {teacher_rationale}\n")
 
     # Add collected data to the validation dataset
     val_dataset = val_dataset.add_column('labels', val_teacher_outputs)
@@ -299,13 +315,15 @@ def main():
     )
 
     # Training
-    print("Starting training...")
+    print("Starting model training...")
+    logger.info("Starting model training...")
     start_time = time.time()
     train_result = trainer.train()
     train_runtime = time.time() - start_time
 
     # Save the model
     trainer.save_model('./student_model')
+    logger.info("Model saved to './student_model'.")
 
     # Compute teacher accuracy from initial predictions
     print("Computing teacher model accuracy on validation data...")
@@ -331,6 +349,7 @@ def main():
         student_predictions.append(output_text)
         rationale = extract_rationale(output_text)
         student_rationales.append(rationale)
+    logger.info("Training completed.")
 
     # Extract predicted answers for student
     student_pred_answers = [extract_answer(text) for text in student_predictions]
@@ -388,6 +407,8 @@ def main():
             f.write(f"Student's Rationale: {student_rationales[idx]}\n")
 
     print(f"Training complete. Report saved to {output_report}")
+    logger.info(f"Training complete. Report saved to {output_report}")
+
 
 if __name__ == "__main__":
     main()
