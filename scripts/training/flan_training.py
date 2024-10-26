@@ -88,6 +88,9 @@ def main():
     hyperparams['greater_is_better'] = bool(hyperparams['greater_is_better'])
     hyperparams['save_strategy'] = hyperparams.get('save_strategy', 'steps')
     hyperparams['hidden_weight'] = float(hyperparams.get('hidden_weight', 0.5))
+    hyperparams['fp16'] = bool(hyperparams['fp16'])
+    hyperparams['gradient_accumulation_steps'] = int(hyperparams['gradient_accumulation_steps'])
+
     logger.info("Loaded hyperparameters from config file.")
     # Load data
     train_dataset, val_dataset = get_preprocessed_data(save_dir='')
@@ -266,6 +269,8 @@ def main():
         load_best_model_at_end=hyperparams['load_best_model_at_end'],
         metric_for_best_model=hyperparams['metric_for_best_model'],
         greater_is_better=hyperparams['greater_is_better'],
+        gradient_accumulation_steps=hyperparams['gradient_accumulation_steps'],
+        fp16=hyperparams['fp16'],
         report_to='none'
     )
 
