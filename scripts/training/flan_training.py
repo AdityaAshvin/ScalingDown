@@ -31,6 +31,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 def set_seed(seed=42):
     random.seed(seed)
     np.random.seed(seed)
@@ -38,24 +39,30 @@ def set_seed(seed=42):
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
 
+
 def get_device():
+    use_deepspeed = False
     if torch.cuda.is_available():
         device = torch.device('cuda')
-        print("Using CUDA")
+        use_deepspeed = True
+        print("Using CUDA. DeepSpeed is enabled for training")
     elif torch.backends.mps.is_available():
         device = torch.device('mps')
         print("Using MPS")
     else:
         device = torch.device('cpu')
         print("Using CPU")
-    return device
+    return device, use_deepspeed
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train student model with knowledge distillation from teacher model")
     parser.add_argument('--data_portion', type=float, default=1.0, help="Portion of dataset to use (e.g., 0.01 for 1%)")
-    parser.add_argument('--output_report', type=str, default='training_report.txt', help="Filename to save the output report")
+    parser.add_argument('--output_report', type=str, default='training_report.txt',
+                        help="Filename to save the output report")
     args = parser.parse_args()
     return args
+
 
 def main():
     logger.info("Starting script...")
@@ -68,10 +75,11 @@ def main():
     output_report = args.output_report
 
     # Get device
-    device = get_device()
+    device, use_deepspeed = get_device()
 
     # Load hyperparameters from config file
     config_path = os.path.join('../../config', 'hyperparameters.yaml')
+    ds_config_path = os.path.join('../../config', 'ds_config.json')
     with open(config_path, 'r') as f:
         hyperparams = yaml.safe_load(f)
 
@@ -90,6 +98,7 @@ def main():
     hyperparams['hidden_weight'] = float(hyperparams.get('hidden_weight', 0.5))
     hyperparams['fp16'] = bool(hyperparams['fp16'])
     hyperparams['gradient_accumulation_steps'] = int(hyperparams['gradient_accumulation_steps'])
+    hyperparams['gradient_checkpointing'] = bool(hyperparams['gradient_checkpointing'])
 
     logger.info("Loaded hyperparameters from config file.")
     # Load data
@@ -120,6 +129,9 @@ def main():
 
     student_tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-small")
     student_model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-small").to(device)
+
+    # Enable gradient checkpointing
+    student_model.gradient_checkpointing_enable()
 
     # Prepare data collator
     data_collator = DataCollatorForSeq2Seq(tokenizer=student_tokenizer, model=student_model)
@@ -240,10 +252,12 @@ def main():
                     decoder_input_ids=inputs['decoder_input_ids'],
                     output_hidden_states=True,
                 )
-                teacher_hidden_states = teacher_outputs.decoder_hidden_states[-1]  # Shape: [batch_size, seq_length, 768]
+                teacher_hidden_states = teacher_outputs.decoder_hidden_states[
+                    -1]  # Shape: [batch_size, seq_length, 768]
 
                 # Project teacher hidden states to match student hidden size
-                projected_teacher_hidden_states = self.projection_layer(teacher_hidden_states)  # Shape: [batch_size, seq_length, 512]
+                projected_teacher_hidden_states = self.projection_layer(
+                    teacher_hidden_states)  # Shape: [batch_size, seq_length, 512]
 
             # Compute MSE loss between student and projected teacher hidden states
             mse_loss = F.mse_loss(student_hidden_states, projected_teacher_hidden_states)
@@ -251,7 +265,20 @@ def main():
             # Total loss
             total_loss = student_loss + self.hidden_weight * mse_loss
 
+            # Clear CUDA cache after each loss computation
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
             return (total_loss, outputs) if return_outputs else total_loss
+
+        def evaluation_loop(self, *args, **kwargs):
+            """
+            Override the evaluation loop to clear CUDA cache before evaluation.
+            """
+            # Clear CUDA cache before evaluation starts
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            return super().evaluation_loop(*args, **kwargs)
 
     # Training arguments from hyperparameters
     training_args = TrainingArguments(
@@ -271,7 +298,9 @@ def main():
         greater_is_better=hyperparams['greater_is_better'],
         gradient_accumulation_steps=hyperparams['gradient_accumulation_steps'],
         fp16=hyperparams['fp16'],
-        report_to='none'
+        report_to='none',
+        gradient_checkpointing=hyperparams['gradient_checkpointing'],
+        deepspeed=ds_config_path if use_deepspeed else None
     )
 
     # Hidden weight from hyperparameters
@@ -281,7 +310,6 @@ def main():
         tokenizer=student_tokenizer,
         interval_steps=500
     )
-
 
     def compute_metrics(eval_pred):
         predictions, labels = eval_pred
@@ -382,17 +410,19 @@ def main():
         f.write("Training Progress Evaluation:\n")
         for log in trainer.state.log_history:
             if 'loss' in log and 'learning_rate' in log:
-                f.write(f"Epoch {log.get('epoch', '')}: Step {log.get('step', '')}, Training Loss = {log['loss']:.4f}\n")
+                f.write(
+                    f"Epoch {log.get('epoch', '')}: Step {log.get('step', '')}, Training Loss = {log['loss']:.4f}\n")
             if 'eval_loss' in log:
-                f.write(f"Epoch {log.get('epoch', '')}: Step {log.get('step', '')}, Validation Loss = {log['eval_loss']:.4f}, Validation Accuracy = {log.get('eval_accuracy', ''):.4f}\n")
+                f.write(
+                    f"Epoch {log.get('epoch', '')}: Step {log.get('step', '')}, Validation Loss = {log['eval_loss']:.4f}, Validation Accuracy = {log.get('eval_accuracy', ''):.4f}\n")
 
         # Teacher evaluation
         f.write("\nTeacher Model Evaluation on Validation Data:\n")
-        f.write(f"Teacher Model Accuracy: {teacher_accuracy*100:.2f}%\n")
+        f.write(f"Teacher Model Accuracy: {teacher_accuracy * 100:.2f}%\n")
 
         # Student evaluation
         f.write("\nStudent Model Evaluation on Validation Data:\n")
-        f.write(f"Student Model Accuracy: {student_accuracy*100:.2f}%\n")
+        f.write(f"Student Model Accuracy: {student_accuracy * 100:.2f}%\n")
 
         # Write validation examples
         num_examples_to_show = min(30, len(val_dataset))
@@ -401,7 +431,7 @@ def main():
             example = val_dataset[idx]
             input_text = teacher_tokenizer.decode(example['input_ids'], skip_special_tokens=True)
 
-            f.write(f"\nExample {idx+1}:\n")
+            f.write(f"\nExample {idx + 1}:\n")
             f.write(f"Input: {input_text}\n")
             f.write(f"Actual Answer: {val_actual_answers[idx]}\n")
             f.write(f"Teacher's Output: {val_teacher_outputs[idx]}\n")

@@ -3,7 +3,7 @@ per_device_train_batch_size: 1
 per_device_eval_batch_size: 1
 learning_rate: 5e-5
 evaluation_strategy: 'steps'
-eval_steps: 500
+eval_steps: 1500
 save_strategy: 'steps'  # Ensure this is included
 save_steps: 500
 logging_steps: 50
@@ -15,3 +15,4 @@ semantic_weight: 0.5
 hidden_weight: 0.5
 fp16: True
 gradient_accumulation_steps: 4
+gradient_checkpointing: True
