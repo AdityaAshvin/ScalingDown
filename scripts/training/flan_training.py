@@ -41,10 +41,10 @@ def set_seed(seed=42):
 
 
 def get_device():
-    use_deepspeed = False
+    on_gpu = False
     if torch.cuda.is_available():
         device = torch.device('cuda')
-        use_deepspeed = True
+        on_gpu = True
         print("Using CUDA. DeepSpeed is enabled for training")
     elif torch.backends.mps.is_available():
         device = torch.device('mps')
@@ -52,7 +52,7 @@ def get_device():
     else:
         device = torch.device('cpu')
         print("Using CPU")
-    return device, use_deepspeed
+    return device, on_gpu
 
 
 def parse_args():
@@ -75,7 +75,7 @@ def main():
     output_report = args.output_report
 
     # Get device
-    device, use_deepspeed = get_device()
+    device, on_gpu = get_device()
 
     # Load hyperparameters from config file
     config_path = os.path.join('../../config', 'hyperparameters.yaml')
@@ -109,7 +109,7 @@ def main():
     # Use portion of dataset
     if data_portion < 1.0:
         num_train_examples = max(5, int(len(train_dataset) * data_portion))
-        num_val_examples = max(200, int(len(val_dataset) * data_portion))
+        num_val_examples = max(5, int(len(val_dataset) * data_portion))
         train_dataset = train_dataset.shuffle(seed=42).select(range(num_train_examples))
         val_dataset = val_dataset.shuffle(seed=42).select(range(num_val_examples))
 
@@ -297,10 +297,10 @@ def main():
         metric_for_best_model=hyperparams['metric_for_best_model'],
         greater_is_better=hyperparams['greater_is_better'],
         gradient_accumulation_steps=hyperparams['gradient_accumulation_steps'],
-        fp16=hyperparams['fp16'],
+        fp16=hyperparams['fp16'] if on_gpu else None,
         report_to='none',
         gradient_checkpointing=hyperparams['gradient_checkpointing'],
-        deepspeed=ds_config_path if use_deepspeed else None
+        deepspeed=ds_config_path if on_gpu else None
     )
 
     # Hidden weight from hyperparameters
