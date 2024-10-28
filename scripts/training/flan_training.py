@@ -234,7 +234,7 @@ def main():
             # Add a projection layer
             self.projection_layer = nn.Linear(768, 512, bias=False).to(self.args.device)
 
-        def compute_loss(self, model, inputs, return_outputs=False):
+        def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
             labels = inputs.get("labels")
             # Prepare decoder input IDs
             decoder_input_ids = model.prepare_decoder_input_ids_from_labels(labels)
