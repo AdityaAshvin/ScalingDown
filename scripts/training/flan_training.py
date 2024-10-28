@@ -100,6 +100,7 @@ def main():
     hyperparams['fp16'] = bool(hyperparams['fp16'])
     hyperparams['gradient_accumulation_steps'] = int(hyperparams['gradient_accumulation_steps'])
     hyperparams['gradient_checkpointing'] = bool(hyperparams['gradient_checkpointing'])
+    hyperparams['eval_accumulation_steps'] = int(hyperparams['eval_accumulation_steps'])
 
     logger.info("Loaded hyperparameters from config file.")
     # Load data
@@ -214,7 +215,7 @@ def main():
         labels = examples['labels']
         tokenized_labels = student_tokenizer(
             labels,
-            max_length=150,
+            max_length=128,
             truncation=True
         )
         examples['labels'] = tokenized_labels['input_ids']
@@ -222,6 +223,14 @@ def main():
 
     train_dataset = train_dataset.map(tokenize_labels, batched=True)
     val_dataset = val_dataset.map(tokenize_labels, batched=True)
+
+    def move_to_cpu(batch):
+        if isinstance(batch, dict):
+            return {k: v.to('cpu') for k, v in batch.items()}
+        elif isinstance(batch, list):
+            return [v.to('cpu') for v in batch]
+        else:
+            return batch.to('cpu')
 
     # Define custom trainer with hidden state distillation
     class CustomTrainer(Trainer):
@@ -279,7 +288,17 @@ def main():
             # Clear CUDA cache before evaluation starts
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
-            return super().evaluation_loop(*args, **kwargs)
+
+            output = super().evaluation_loop(*args, **kwargs)
+
+            if isinstance(output, dict):
+                output = {k: v.to('cpu') for k, v in output.items()}
+            elif isinstance(output, list):
+                output = [v.to('cpu') for v in output]
+            else:
+                output = output.to('cpu')
+
+            return output
 
     # Training arguments from hyperparameters
     training_args = TrainingArguments(
@@ -302,6 +321,7 @@ def main():
         bf16=hyperparams['bf16'] if on_gpu else None,
         report_to='none',
         gradient_checkpointing=hyperparams['gradient_checkpointing'],
+        eval_accumulation_steps=hyperparams['eval_accumulation_steps']
         # deepspeed=ds_config_path if on_gpu else None
     )
 

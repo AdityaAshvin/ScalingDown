@@ -17,3 +17,4 @@ bf16: False
 fp16: True
 gradient_accumulation_steps: 4
 gradient_checkpointing: True
+eval_accumulation_steps: 1
