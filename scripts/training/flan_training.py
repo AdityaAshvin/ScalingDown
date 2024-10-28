@@ -291,12 +291,12 @@ def main():
 
             output = super().evaluation_loop(*args, **kwargs)
 
-            if isinstance(output, dict):
-                output = {k: v.to('cpu') for k, v in output.items()}
-            elif isinstance(output, list):
-                output = [v.to('cpu') for v in output]
-            else:
-                output = output.to('cpu')
+            # if isinstance(output, dict):
+            #     output = {k: v.to('cpu') for k, v in output.items()}
+            # elif isinstance(output, list):
+            #     output = [v.to('cpu') for v in output]
+            # else:
+            #     output = output.to('cpu')
 
             return output
 
