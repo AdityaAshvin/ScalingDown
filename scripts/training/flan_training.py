@@ -302,7 +302,7 @@ def main():
         bf16=hyperparams['bf16'] if on_gpu else None,
         report_to='none',
         gradient_checkpointing=hyperparams['gradient_checkpointing'],
-        deepspeed=ds_config_path if on_gpu else None
+        # deepspeed=ds_config_path if on_gpu else None
     )
 
     # Hidden weight from hyperparameters
