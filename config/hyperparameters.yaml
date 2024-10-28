@@ -13,6 +13,7 @@ metric_for_best_model: 'eval_loss'
 greater_is_better: False
 semantic_weight: 0.5
 hidden_weight: 0.5
-fp16: True
+bf16: True
+fp16: False
 gradient_accumulation_steps: 4
 gradient_checkpointing: True

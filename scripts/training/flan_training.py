@@ -96,6 +96,7 @@ def main():
     hyperparams['greater_is_better'] = bool(hyperparams['greater_is_better'])
     hyperparams['save_strategy'] = hyperparams.get('save_strategy', 'steps')
     hyperparams['hidden_weight'] = float(hyperparams.get('hidden_weight', 0.5))
+    hyperparams['bf16'] = bool(hyperparams['bf16'])
     hyperparams['fp16'] = bool(hyperparams['fp16'])
     hyperparams['gradient_accumulation_steps'] = int(hyperparams['gradient_accumulation_steps'])
     hyperparams['gradient_checkpointing'] = bool(hyperparams['gradient_checkpointing'])
@@ -298,6 +299,7 @@ def main():
         greater_is_better=hyperparams['greater_is_better'],
         gradient_accumulation_steps=hyperparams['gradient_accumulation_steps'],
         fp16=hyperparams['fp16'] if on_gpu else None,
+        bf16=hyperparams['bf16'] if on_gpu else None,
         report_to='none',
         gradient_checkpointing=hyperparams['gradient_checkpointing'],
         deepspeed=ds_config_path if on_gpu else None
