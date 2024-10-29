@@ -225,13 +225,6 @@ def main():
     train_dataset = train_dataset.map(tokenize_labels, batched=True)
     val_dataset = val_dataset.map(tokenize_labels, batched=True)
 
-    def move_to_cpu(batch):
-        if isinstance(batch, dict):
-            return {k: v.to('cpu') for k, v in batch.items()}
-        elif isinstance(batch, list):
-            return [v.to('cpu') for v in batch]
-        else:
-            return batch.to('cpu')
 
     # Define custom trainer with hidden state distillation
     class CustomTrainer(Trainer):
@@ -282,24 +275,32 @@ def main():
 
             return (total_loss, outputs) if return_outputs else total_loss
 
-        def evaluation_loop(self, *args, **kwargs):
-            """
-            Override the evaluation loop to clear CUDA cache before evaluation.
-            """
-            # Clear CUDA cache before evaluation starts
-            if torch.cuda.is_available():
+        def evaluate(self, eval_dataset=None, ignore_keys=None, metric_key_prefix: str = "eval"):
+            # Move model to CPU before evaluation
+            print("Start evaluating...")
+            logger.info("Start evaluating..")
+            if on_gpu:
+                print("Moving model to cpu to reduce memory usage on GPU")
+                logger.info("Moving model to cpu to reduce memory usage on GPU")
+                self.model.to('cpu')
                 torch.cuda.empty_cache()
+                gc.collect()
 
-            output = super().evaluation_loop(*args, **kwargs)
+            # Perform evaluation
+            results = super().evaluate(eval_dataset=eval_dataset, ignore_keys=ignore_keys,
+                                       metric_key_prefix=metric_key_prefix)
 
-            # if isinstance(output, dict):
-            #     output = {k: v.to('cpu') for k, v in output.items()}
-            # elif isinstance(output, list):
-            #     output = [v.to('cpu') for v in output]
-            # else:
-            #     output = output.to('cpu')
+            # Move model back to GPU after evaluation
+            if on_gpu:
+                self.model.to(self.args.device)
+                torch.cuda.empty_cache()
+                gc.collect()
+                print("Moving model back to GPU")
+                logger.info("Moving model back to GPU")
 
-            return output
+            print("Finished evaluation")
+            logger.info("Finished evaluation")
+            return results
 
     # Training arguments from hyperparameters
     training_args = TrainingArguments(
