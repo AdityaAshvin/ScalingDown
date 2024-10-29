@@ -238,40 +238,44 @@ def main():
             self.projection_layer = nn.Linear(768, 512, bias=False).to(self.args.device)
 
         def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
+            # Move inputs to the same device as the model
+            current_device = next(model.parameters()).device
+            inputs = {k: v.to(current_device) for k, v in inputs.items()}
             labels = inputs.get("labels")
             # Prepare decoder input IDs
             decoder_input_ids = model.prepare_decoder_input_ids_from_labels(labels)
-            inputs['decoder_input_ids'] = decoder_input_ids
+            inputs['decoder_input_ids'] = decoder_input_ids.to(current_device)
 
             outputs = model(**inputs, output_hidden_states=True)
             student_loss = outputs.loss
 
-            # Get the student's last hidden state
-            student_hidden_states = outputs.decoder_hidden_states[-1]  # Shape: [batch_size, seq_length, 512]
+            if model.training:
+                # Get the student's last hidden state
+                student_hidden_states = outputs.decoder_hidden_states[-1]  # Shape: [batch_size, seq_length, 512]
 
-            with torch.no_grad():
-                teacher_outputs = self.teacher_model(
-                    input_ids=inputs['input_ids'],
-                    attention_mask=inputs['attention_mask'],
-                    decoder_input_ids=inputs['decoder_input_ids'],
-                    output_hidden_states=True,
-                )
-                teacher_hidden_states = teacher_outputs.decoder_hidden_states[
-                    -1]  # Shape: [batch_size, seq_length, 768]
+                with torch.no_grad():
+                    # Move teacher model to the same device as student model
+                    self.teacher_model.to(current_device)
+                    teacher_outputs = self.teacher_model(
+                        input_ids=inputs['input_ids'],
+                        attention_mask=inputs['attention_mask'],
+                        decoder_input_ids=inputs['decoder_input_ids'],
+                        output_hidden_states=True,
+                    )
+                    teacher_hidden_states = teacher_outputs.decoder_hidden_states[
+                        -1]  # Shape: [batch_size, seq_length, 768]
 
-                # Project teacher hidden states to match student hidden size
-                projected_teacher_hidden_states = self.projection_layer(
-                    teacher_hidden_states)  # Shape: [batch_size, seq_length, 512]
+                    # Project teacher hidden states to match student hidden size
+                    projected_teacher_hidden_states = self.projection_layer(teacher_hidden_states)
 
-            # Compute MSE loss between student and projected teacher hidden states
-            mse_loss = F.mse_loss(student_hidden_states, projected_teacher_hidden_states)
+                # Compute MSE loss between student and projected teacher hidden states
+                mse_loss = F.mse_loss(student_hidden_states, projected_teacher_hidden_states)
 
-            # Total loss
-            total_loss = student_loss + self.hidden_weight * mse_loss
-
-            # Clear CUDA cache after each loss computation
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
+                # Total loss
+                total_loss = student_loss + self.hidden_weight * mse_loss
+            else:
+                # During evaluation, only compute student_loss
+                total_loss = student_loss
 
             return (total_loss, outputs) if return_outputs else total_loss
 
