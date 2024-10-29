@@ -372,7 +372,8 @@ def main():
         teacher_model=teacher_model,
         hidden_weight=hidden_weight,
         compute_metrics=compute_metrics,
-        callbacks=[EarlyStoppingCallback(early_stopping_patience=3), print_sample_callback],
+        # callbacks=[EarlyStoppingCallback(early_stopping_patience=3), print_sample_callback],
+        callbacks=[print_sample_callback],
     )
 
     # Training
