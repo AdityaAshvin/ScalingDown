@@ -1,5 +1,6 @@
 import argparse
 import torch
+import gc
 import torch.nn as nn
 from typing import Any, Dict, List, Optional, Tuple, Union
 from transformers import (
@@ -385,10 +386,12 @@ def main():
     teacher_accuracy = accuracy_score(val_actual_answers, teacher_predictions)
 
     # Evaluate the student model on validation data
+    logger.info("Evaluation on student model started.")
     print("Evaluating student model on validation data...")
     student_model.eval()
     student_predictions = []
     student_rationales = []
+    student_pred_answers = []
     for example in tqdm(val_dataset, desc="Evaluating student model"):
         input_ids = torch.tensor(example['input_ids']).unsqueeze(0).to(device)
         attention_mask = torch.tensor(example['attention_mask']).unsqueeze(0).to(device)
@@ -397,17 +400,18 @@ def main():
                 input_ids=input_ids,
                 attention_mask=attention_mask,
                 max_length=150,
-                num_beams=3,
+                num_beams=1,
                 early_stopping=True
             )
         output_text = student_tokenizer.decode(output_ids[0], skip_special_tokens=True)
         student_predictions.append(output_text)
-        rationale = extract_rationale(output_text)
-        student_rationales.append(rationale)
-    logger.info("Training completed.")
+        student_pred_answers.append(extract_answer(output_text))
+        student_rationales.append(extract_rationale(output_text))
 
-    # Extract predicted answers for student
-    student_pred_answers = [extract_answer(text) for text in student_predictions]
+        del input_ids, attention_mask, output_ids
+        torch.cuda.empty_cache()
+        gc.collect()
+    logger.info("Evaluation completed.")
 
     # Compute student accuracy
     student_accuracy = accuracy_score(val_actual_answers, student_pred_answers)

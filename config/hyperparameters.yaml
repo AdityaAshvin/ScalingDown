@@ -2,7 +2,7 @@ num_train_epochs: 3
 per_device_train_batch_size: 1
 per_device_eval_batch_size: 1
 learning_rate: 5e-5
-evaluation_strategy: 'steps'
+evaluation_strategy: 'no'
 eval_steps: 1500
 save_strategy: 'steps'  # Ensure this is included
 save_steps: 1500
