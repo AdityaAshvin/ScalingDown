@@ -279,32 +279,32 @@ def main():
 
             return (total_loss, outputs) if return_outputs else total_loss
 
-        def evaluate(self, eval_dataset=None, ignore_keys=None, metric_key_prefix: str = "eval"):
-            # Move model to CPU before evaluation
-            print("Start evaluating...")
-            logger.info("Start evaluating..")
-            if on_gpu:
-                print("Moving model to cpu to reduce memory usage on GPU")
-                logger.info("Moving model to cpu to reduce memory usage on GPU")
-                self.model.to('cpu')
-                torch.cuda.empty_cache()
-                gc.collect()
-
-            # Perform evaluation
-            results = super().evaluate(eval_dataset=eval_dataset, ignore_keys=ignore_keys,
-                                       metric_key_prefix=metric_key_prefix)
-
-            # Move model back to GPU after evaluation
-            if on_gpu:
-                self.model.to(self.args.device)
-                torch.cuda.empty_cache()
-                gc.collect()
-                print("Moving model back to GPU")
-                logger.info("Moving model back to GPU")
-
-            print("Finished evaluation")
-            logger.info("Finished evaluation")
-            return results
+        # def evaluate(self, eval_dataset=None, ignore_keys=None, metric_key_prefix: str = "eval"):
+        #     # Move model to CPU before evaluation
+        #     print("Start evaluating...")
+        #     logger.info("Start evaluating..")
+        #     if on_gpu:
+        #         print("Moving model to cpu to reduce memory usage on GPU")
+        #         logger.info("Moving model to cpu to reduce memory usage on GPU")
+        #         self.model.to('cpu')
+        #         torch.cuda.empty_cache()
+        #         gc.collect()
+        #
+        #     # Perform evaluation
+        #     results = super().evaluate(eval_dataset=eval_dataset, ignore_keys=ignore_keys,
+        #                                metric_key_prefix=metric_key_prefix)
+        #
+        #     # Move model back to GPU after evaluation
+        #     if on_gpu:
+        #         self.model.to(self.args.device)
+        #         torch.cuda.empty_cache()
+        #         gc.collect()
+        #         print("Moving model back to GPU")
+        #         logger.info("Moving model back to GPU")
+        #
+        #     print("Finished evaluation")
+        #     logger.info("Finished evaluation")
+        #     return results
 
     # Training arguments from hyperparameters
     training_args = TrainingArguments(
@@ -413,6 +413,7 @@ def main():
         student_pred_answers.append(extract_answer(output_text))
         student_rationales.append(extract_rationale(output_text))
 
+        # Free up memory
         del input_ids, attention_mask, output_ids
         torch.cuda.empty_cache()
         gc.collect()
