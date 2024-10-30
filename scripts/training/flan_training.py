@@ -2,7 +2,8 @@ import argparse
 import torch
 import gc
 import torch.nn as nn
-from typing import Any, Dict, List, Optional, Tuple, Union
+import matplotlib.pyplot as plt
+from datetime import datetime
 from transformers import (
     AutoTokenizer,
     AutoModelForSeq2SeqLM,
@@ -59,10 +60,38 @@ def get_device():
 def parse_args():
     parser = argparse.ArgumentParser(description="Train student model with knowledge distillation from teacher model")
     parser.add_argument('--data_portion', type=float, default=1.0, help="Portion of dataset to use (e.g., 0.01 for 1%)")
-    parser.add_argument('--output_report', type=str, default='training_report.txt',
+    parser.add_argument('--output_report', type=str, default='',
                         help="Filename to save the output report")
     args = parser.parse_args()
     return args
+
+def generate_training_graph(validation_losses, training_losses, mse_losses, validation_accuracies, training_graph_report):
+    # Plotting training and validation loss
+    epochs = range(1, len(validation_losses) + 1)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(epochs, training_losses, label='Training Loss')
+    plt.plot(epochs, mse_losses, label='MSE Loss')
+    plt.plot(epochs, validation_losses, label='Validation Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Training and Validation Loss')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig('loss_curve.png')
+    plt.close()
+
+    # Plotting validation accuracy
+    plt.figure(figsize=(10, 6))
+    plt.plot(epochs, validation_accuracies, label='Validation Accuracy', color='green')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.title('Validation Accuracy Over Epochs')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(training_graph_report)
+    plt.close()
+
 
 
 def main():
@@ -73,7 +102,10 @@ def main():
     # Parse arguments
     args = parse_args()
     data_portion = args.data_portion
-    output_report = args.output_report
+    output_report_path = args.output_report
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+    output_report = os.path.join(output_report_path, f"{timestamp}-training_report.txt")
+    training_graph_report = os.path.join(output_report_path, f"{timestamp}-training_graph.png")
 
     # Get device
     device, on_gpu = get_device()
@@ -280,11 +312,11 @@ def main():
 
                 # Total loss
                 total_loss = student_loss + self.hidden_weight * mse_loss
-                print(f"Student Loss: {student_loss.item()}, MSE Loss: {mse_loss.item()}")
+                # print(f"Student Loss: {student_loss.item()}, MSE Loss: {mse_loss.item()}")
             else:
                 # During evaluation, only compute student_loss
                 total_loss = student_loss
-                print(f"Validation Loss: {student_loss.item()}")
+                # print(f"Validation Loss: {student_loss.item()}")
 
             return (total_loss, outputs) if return_outputs else total_loss
 
@@ -449,16 +481,34 @@ def main():
         f.write(f"Final training loss: {train_result.metrics['train_loss']:.4f}\n")
         f.write(f"Epochs completed: {train_result.metrics['epoch']:.1f}\n\n")
 
-        # Training progress evaluation
-        f.write("Training Progress Evaluation:\n")
-        for log in trainer.state.log_history:
-            if 'loss' in log and 'learning_rate' in log:
-                f.write(
-                    f"Epoch {log.get('epoch', '')}: Step {log.get('step', '')}, Training Loss = {log['loss']:.4f}\n")
-            if 'eval_loss' in log:
-                f.write(
-                    f"Epoch {log.get('epoch', '')}: Step {log.get('step', '')}, Validation Loss = {log['eval_loss']:.4f}, Validation Accuracy = {log.get('eval_accuracy', ''):.4f}\n")
+        # Extract training and evaluation metrics from log_history
+        training_losses = []
+        mse_losses = []
+        validation_losses = []
+        validation_accuracies = []
 
+        for log in trainer.state.log_history:
+            if 'loss' in log and 'mse_loss' in log:
+                training_losses.append(log['loss'])
+                mse_losses.append(log['mse_loss'])
+            if 'eval_loss' in log and 'eval_accuracy' in log:
+                validation_losses.append(log['eval_loss'])
+                validation_accuracies.append(log['eval_accuracy'])
+
+            # Training progress evaluation
+        f.write("Training Progress Evaluation:\n")
+        f.write("Epoch | Training Loss | MSE Loss | Validation Loss | Validation Accuracy\n")
+        f.write("--------------------------------------------------------------------------\n")
+        for i in range(len(validation_losses)):
+            epoch = i + 1
+            train_loss = training_losses[i] if i < len(training_losses) else 'N/A'
+            mse_loss = mse_losses[i] if i < len(mse_losses) else 'N/A'
+            eval_loss = validation_losses[i]
+            eval_acc = validation_accuracies[i]
+            f.write(f"{epoch:<5} | {train_loss:<13} | {mse_loss:<8} | {eval_loss:<15} | {eval_acc:<18}\n")
+
+        # Training loss plot will be saved separately and referenced here
+        f.write("\nSee 'loss_curve.png' and 'accuracy_curve.png' for visualizations of training progress.\n\n")
         # Teacher evaluation
         f.write("\nTeacher Model Evaluation on Validation Data:\n")
         f.write(f"Teacher Model Accuracy: {teacher_accuracy * 100:.2f}%\n")
@@ -486,6 +536,8 @@ def main():
 
     print(f"Training complete. Report saved to {output_report}")
     logger.info(f"Training complete. Report saved to {output_report}")
+
+    generate_training_graph(validation_losses, training_losses, mse_losses, validation_accuracies, training_graph_report)
 
 
 if __name__ == "__main__":
