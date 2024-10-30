@@ -38,13 +38,12 @@ def preprocess_data(save_dir):
     # Preprocess function
     def preprocess_function(examples):
         inputs = []
-        for question, options in zip(examples['question'], examples['options']):
-            # Check if options are already labeled by inspecting the first option
+        labels = []
+        for question, options, correct in zip(examples['question'], examples['options'], examples['correct']):
+            # Prepare options string
             if options[0].startswith(('A)', 'B)', 'C)', 'D)', 'E)')):
-                # Options are already labeled; join them with newline
                 options_str = '\n'.join(options)
             else:
-                # Label the options with A, B, C, D, E
                 option_labels = ['A', 'B', 'C', 'D', 'E']
                 labeled_options = [f"{label}) {option}" for label, option in zip(option_labels, options)]
                 options_str = '\n'.join(labeled_options)
@@ -52,20 +51,30 @@ def preprocess_data(save_dir):
             input_text = (
                 f"Question: {question}\n"
                 f"Options:\n{options_str}\n\n"
-                "Please solve the problem and provide the correct option along with a detailed step-by-step rationale."
-                "\n\nRationale:\nAnswer:"
+                "Please select the correct option."
             )
             inputs.append(input_text)
+            labels.append(correct)
 
+        # Tokenize inputs
         model_inputs = tokenizer(
             inputs,
             max_length=512,
             truncation=True,
             padding='max_length'
         )
-        # Keep the 'correct' and 'rationale' fields
-        model_inputs['correct'] = examples['correct']
-        model_inputs['rationale'] = examples['rationale']
+        # Tokenize labels
+        tokenized_labels = tokenizer(
+            labels,
+            max_length=5,
+            truncation=True,
+            padding='max_length'
+        )['input_ids']
+
+        # Replace padding token id's with -100 to ignore in loss computation
+        tokenized_labels = [[(l if l != tokenizer.pad_token_id else -100) for l in label] for label in tokenized_labels]
+
+        model_inputs['labels'] = tokenized_labels
         return model_inputs
 
     # Apply preprocessing to the datasets
