@@ -14,7 +14,7 @@ greater_is_better: False
 semantic_weight: 0.5
 hidden_weight: 0.5
 bf16: False
-fp16: True
+fp16: False
 gradient_accumulation_steps: 4
 gradient_checkpointing: True
 eval_accumulation_steps: 1
