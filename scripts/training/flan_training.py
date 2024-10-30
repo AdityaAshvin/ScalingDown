@@ -65,32 +65,42 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def generate_training_graph(validation_losses, training_losses, mse_losses, validation_accuracies, training_graph_report):
-    # Plotting training and validation loss
-    epochs = range(1, len(validation_losses) + 1)
+
+def generate_training_graph(validation_losses, training_losses, mse_losses, validation_accuracies,
+                            training_graph_report):
+    # Plotting training and MSE loss against steps
+    if len(training_losses) == 0:
+        print("No training losses to plot.")
+        return
+
+    steps = range(1, len(training_losses) + 1)
 
     plt.figure(figsize=(10, 6))
-    plt.plot(epochs, training_losses, label='Training Loss')
-    plt.plot(epochs, mse_losses, label='MSE Loss')
-    plt.plot(epochs, validation_losses, label='Validation Loss')
-    plt.xlabel('Epochs')
+    plt.plot(steps, training_losses, label='Training Loss')
+    plt.plot(steps, mse_losses, label='MSE Loss')
+    plt.xlabel('Training Steps')
     plt.ylabel('Loss')
-    plt.title('Training and Validation Loss')
-    plt.legend()
-    plt.grid(True)
-    plt.savefig('loss_curve.png')
-    plt.close()
-
-    # Plotting validation accuracy
-    plt.figure(figsize=(10, 6))
-    plt.plot(epochs, validation_accuracies, label='Validation Accuracy', color='green')
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.title('Validation Accuracy Over Epochs')
+    plt.title('Training and MSE Loss Over Steps')
     plt.legend()
     plt.grid(True)
     plt.savefig(training_graph_report)
     plt.close()
+    print(f"Saved training loss graph in {training_graph_report}")
+
+    # Plotting validation accuracy separately if available
+    if len(validation_accuracies) > 0:
+        epochs = range(1, len(validation_accuracies) + 1)
+        plt.figure(figsize=(10, 6))
+        plt.plot(epochs, validation_accuracies, label='Validation Accuracy', color='green')
+        plt.xlabel('Epochs')
+        plt.ylabel('Accuracy')
+        plt.title('Validation Accuracy Over Epochs')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(training_graph_report)
+        plt.close()
+    else:
+        print("No validation accuracy to plot.")
 
 
 
@@ -310,6 +320,12 @@ def main():
                 # Compute MSE loss between student and projected teacher hidden states
                 mse_loss = F.mse_loss(student_hidden_states, projected_teacher_hidden_states)
 
+                # Log the losses
+                self.log({
+                    "loss": student_loss.item(),
+                    "mse_loss": mse_loss.item()
+                })
+
                 # Total loss
                 total_loss = student_loss + self.hidden_weight * mse_loss
                 # print(f"Student Loss: {student_loss.item()}, MSE Loss: {mse_loss.item()}")
@@ -496,19 +512,19 @@ def main():
                 validation_accuracies.append(log['eval_accuracy'])
 
             # Training progress evaluation
-        f.write("Training Progress Evaluation:\n")
-        f.write("Epoch | Training Loss | MSE Loss | Validation Loss | Validation Accuracy\n")
-        f.write("--------------------------------------------------------------------------\n")
-        for i in range(len(validation_losses)):
-            epoch = i + 1
-            train_loss = training_losses[i] if i < len(training_losses) else 'N/A'
-            mse_loss = mse_losses[i] if i < len(mse_losses) else 'N/A'
-            eval_loss = validation_losses[i]
-            eval_acc = validation_accuracies[i]
-            f.write(f"{epoch:<5} | {train_loss:<13} | {mse_loss:<8} | {eval_loss:<15} | {eval_acc:<18}\n")
+        if len(training_losses) > 0:
+            f.write("Training Progress Evaluation:\n")
+            f.write("Step | Training Loss | MSE Loss\n")
+            f.write("--------------------------------\n")
+            for i in range(len(training_losses)):
+                step = i + 1
+                train_loss = training_losses[i]
+                mse_loss = mse_losses[i]
+                f.write(f"{step:<5} | {train_loss:<13} | {mse_loss:<8}\n")
+            f.write("\nSee 'loss_curve.png' for visualization of training loss.\n\n")
+        else:
+            f.write("No training metrics available.\n\n")
 
-        # Training loss plot will be saved separately and referenced here
-        f.write("\nSee 'loss_curve.png' and 'accuracy_curve.png' for visualizations of training progress.\n\n")
         # Teacher evaluation
         f.write("\nTeacher Model Evaluation on Validation Data:\n")
         f.write(f"Teacher Model Accuracy: {teacher_accuracy * 100:.2f}%\n")
@@ -537,7 +553,8 @@ def main():
     print(f"Training complete. Report saved to {output_report}")
     logger.info(f"Training complete. Report saved to {output_report}")
 
-    generate_training_graph(validation_losses, training_losses, mse_losses, validation_accuracies, training_graph_report)
+    generate_training_graph(validation_losses, training_losses, mse_losses, validation_accuracies,
+                            training_graph_report)
 
 
 if __name__ == "__main__":
