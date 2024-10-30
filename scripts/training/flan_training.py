@@ -324,7 +324,7 @@ def main():
                 # Log the losses
                 if self.control.should_log:
                     self.log({
-                        "loss": student_loss.item(),
+                        "student_loss": student_loss.item(),
                         "mse_loss": mse_loss.item()
                     })
 
@@ -391,15 +391,20 @@ def main():
         # deepspeed=ds_config_path if on_gpu else None
     )
 
-    # Hidden weight from hyperparameters
-    hidden_weight = hyperparams['hidden_weight']
-    sample_input_text = teacher_tokenizer.decode(val_dataset[0]['input_ids'], skip_special_tokens=True)
+    sample_index = 0  # You can choose any valid index within your validation set
+    sample_input_text = teacher_tokenizer.decode(val_dataset[sample_index]['input_ids'], skip_special_tokens=True)
+    correct_answer = val_actual_answers[sample_index]  # Ensure this index is valid
 
+    # Instantiate the PrintSampleCallback with the correct answer
     print_sample_callback = PrintSampleCallback(
         tokenizer=student_tokenizer,
         sample_input_text=sample_input_text,
-        interval_steps=hyperparams['logging_steps']  # Set to match logging_steps for consistency
+        correct_answer=correct_answer,
+        interval_steps=hyperparams['logging_steps']  # Align with logging_steps for consistency
     )
+
+    # Hidden weight from hyperparameters
+    hidden_weight = hyperparams['hidden_weight']
 
     def compute_metrics(eval_pred):
         predictions, labels = eval_pred
@@ -448,6 +453,11 @@ def main():
     # Save the model
     trainer.save_model('./student_model')
     logger.info("Model saved to './student_model'.")
+
+    print("Checking logs")
+    for log in trainer.state.log_history:
+        if 'student_loss' in log and 'mse_loss' in log:
+            print(log)
 
     # Compute teacher accuracy from initial predictions
     print("Computing teacher model accuracy on validation data...")
@@ -509,7 +519,7 @@ def main():
 
         for log in trainer.state.log_history:
             if 'loss' in log and 'mse_loss' in log:
-                training_losses.append(log['loss'])
+                training_losses.append(log['student_loss'])
                 mse_losses.append(log['mse_loss'])
             if 'eval_loss' in log and 'eval_accuracy' in log:
                 validation_losses.append(log['eval_loss'])
