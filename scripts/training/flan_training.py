@@ -67,7 +67,7 @@ def parse_args():
 
 
 def generate_training_graph(validation_losses, training_losses, mse_losses, validation_accuracies,
-                            training_graph_report):
+                            training_graph_path, validation_graph_path):
     # Plotting training and MSE loss against steps
     if len(training_losses) == 0:
         print("No training losses to plot.")
@@ -83,9 +83,9 @@ def generate_training_graph(validation_losses, training_losses, mse_losses, vali
     plt.title('Training and MSE Loss Over Steps')
     plt.legend()
     plt.grid(True)
-    plt.savefig(training_graph_report)
+    plt.savefig(training_graph_path)
     plt.close()
-    print(f"Saved training loss graph in {training_graph_report}")
+    print(f"Saved training loss graph in {training_graph_path}")
 
     # Plotting validation accuracy separately if available
     if len(validation_accuracies) > 0:
@@ -97,7 +97,7 @@ def generate_training_graph(validation_losses, training_losses, mse_losses, vali
         plt.title('Validation Accuracy Over Epochs')
         plt.legend()
         plt.grid(True)
-        plt.savefig(training_graph_report)
+        plt.savefig(validation_graph_path)
         plt.close()
     else:
         print("No validation accuracy to plot.")
@@ -112,10 +112,11 @@ def main():
     # Parse arguments
     args = parse_args()
     data_portion = args.data_portion
-    output_report_path = args.output_report
+    output_report_dir = args.output_report
     timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-    output_report = os.path.join(output_report_path, f"{timestamp}-training_report.txt")
-    training_graph_report = os.path.join(output_report_path, f"{timestamp}-training_graph.png")
+    output_report_path = os.path.join(output_report_dir, f"{timestamp}-training_report.txt")
+    training_graph_path = os.path.join(output_report_path, f"{timestamp}-training_graph.png")
+    validation_graph_path = os.path.join(output_report_path, f"{timestamp}-validation_graph.png")
 
     # Get device
     device, on_gpu = get_device()
@@ -321,10 +322,11 @@ def main():
                 mse_loss = F.mse_loss(student_hidden_states, projected_teacher_hidden_states)
 
                 # Log the losses
-                self.log({
-                    "loss": student_loss.item(),
-                    "mse_loss": mse_loss.item()
-                })
+                if self.control.should_log:
+                    self.log({
+                        "loss": student_loss.item(),
+                        "mse_loss": mse_loss.item()
+                    })
 
                 # Total loss
                 total_loss = student_loss + self.hidden_weight * mse_loss
@@ -391,10 +393,12 @@ def main():
 
     # Hidden weight from hyperparameters
     hidden_weight = hyperparams['hidden_weight']
+    sample_input_text = teacher_tokenizer.decode(val_dataset[0]['input_ids'], skip_special_tokens=True)
 
     print_sample_callback = PrintSampleCallback(
         tokenizer=student_tokenizer,
-        interval_steps=500
+        sample_input_text=sample_input_text,
+        interval_steps=hyperparams['logging_steps']  # Set to match logging_steps for consistency
     )
 
     def compute_metrics(eval_pred):
@@ -482,7 +486,7 @@ def main():
     student_accuracy = accuracy_score(val_actual_answers, student_pred_answers)
 
     # Write report
-    with open(output_report, 'w') as f:
+    with open(output_report_path, 'w') as f:
         f.write("Training complete.\n\n")
 
         # Number of questions trained
@@ -550,11 +554,11 @@ def main():
             # f.write(f"Student's Answer: {student_pred_answers[idx]}\n")
             # f.write(f"Student's Rationale: {student_rationales[idx]}\n")
 
-    print(f"Training complete. Report saved to {output_report}")
-    logger.info(f"Training complete. Report saved to {output_report}")
+    print(f"Training complete. Report saved to {output_report_path}")
+    logger.info(f"Training complete. Report saved to {output_report_path}")
 
     generate_training_graph(validation_losses, training_losses, mse_losses, validation_accuracies,
-                            training_graph_report)
+                            training_graph_path, validation_graph_path)
 
 
 if __name__ == "__main__":
