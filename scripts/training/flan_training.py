@@ -106,13 +106,14 @@ def main():
     logger.info("Loaded hyperparameters from config file.")
     # Load data
     train_dataset, val_dataset = get_preprocessed_data(save_dir='')
+    print(train_dataset[0]['labels'])  # Should be a list of token IDs
     logger.info(f"Loaded training dataset with {len(train_dataset)} examples.")
     logger.info(f"Loaded validation dataset with {len(val_dataset)} examples.")
 
     # Use portion of dataset
     if data_portion < 1.0:
         num_train_examples = max(5, int(len(train_dataset) * data_portion))
-        num_val_examples = max(200, int(len(val_dataset) * data_portion))
+        num_val_examples = max(10, int(len(val_dataset) * data_portion))
         train_dataset = train_dataset.shuffle(seed=42).select(range(num_train_examples))
         val_dataset = val_dataset.shuffle(seed=42).select(range(num_val_examples))
 
@@ -140,27 +141,45 @@ def main():
     data_collator = DataCollatorForSeq2Seq(tokenizer=student_tokenizer, model=student_model)
 
     # Generate teacher outputs for training data
-    print("Generating teacher outputs for training data...")
-    logger.info("Generating teacher outputs for training data...")
-    teacher_outputs = []
-    for idx, example in enumerate(tqdm(train_dataset, desc="Processing training data")):
-        if idx % 500 == 0:
-            logger.info(f"Processed {idx} training examples.")
-        input_ids = torch.tensor(example['input_ids']).unsqueeze(0).to(device)
-        attention_mask = torch.tensor(example['attention_mask']).unsqueeze(0).to(device)
-        with torch.no_grad():
-            output_ids = teacher_model.generate(
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                max_length=150,
-                num_beams=3,
-                early_stopping=True
-            )
-        output_text = teacher_tokenizer.decode(output_ids[0], skip_special_tokens=True)
-        teacher_outputs.append(output_text)
+    # print("Generating teacher outputs for training data...")
+    # logger.info("Generating teacher outputs for training data...")
+    # teacher_outputs = []
+    # for idx, example in enumerate(tqdm(train_dataset, desc="Processing training data")):
+    #     if idx % 500 == 0:
+    #         logger.info(f"Processed {idx} training examples.")
+    #     input_ids = torch.tensor(example['input_ids']).unsqueeze(0).to(device)
+    #     attention_mask = torch.tensor(example['attention_mask']).unsqueeze(0).to(device)
+    #     with torch.no_grad():
+    #         output_ids = teacher_model.generate(
+    #             input_ids=input_ids,
+    #             attention_mask=attention_mask,
+    #             max_length=150,
+    #             num_beams=3,
+    #             early_stopping=True
+    #         )
+    #     output_text = teacher_tokenizer.decode(output_ids[0], skip_special_tokens=True)
+    #     teacher_outputs.append(output_text)
+    #
+    # # Add teacher outputs to train_dataset
+    # train_dataset = train_dataset.add_column('labels', teacher_outputs)
 
-    # Add teacher outputs to train_dataset
-    train_dataset = train_dataset.add_column('labels', teacher_outputs)
+    # Tokenize labels using the 'correct' field
+    def prepare_labels(examples):
+        labels = examples['correct']
+        # Tokenize the labels
+        tokenized_labels = student_tokenizer(
+            labels,
+            max_length=5,
+            truncation=True,
+            padding='max_length'
+        )['input_ids']
+        # Replace padding token id's with -100 to ignore in loss computation
+        labels = [[(l if l != student_tokenizer.pad_token_id else -100) for l in label] for label in tokenized_labels]
+        examples['labels'] = labels
+        return examples
+
+    train_dataset = train_dataset.map(prepare_labels, batched=True)
+    val_dataset = val_dataset.map(prepare_labels, batched=True)
 
     # Generate teacher outputs for validation data and collect actual answers
     logger.info("Generating teacher outputs for validation data...")
@@ -206,24 +225,13 @@ def main():
         #     print(f"Teacher's Rationale: {teacher_rationale}\n")
 
     # Add collected data to the validation dataset
-    val_dataset = val_dataset.add_column('labels', val_teacher_outputs)
+    # Change 'labels' to 'teacher_outputs' to avoid duplication
+    val_dataset = val_dataset.add_column('teacher_outputs', val_teacher_outputs)
     val_dataset = val_dataset.add_column('actual_answers', val_actual_answers)
     val_dataset = val_dataset.add_column('actual_rationales', val_actual_rationales)
     val_dataset = val_dataset.add_column('teacher_rationales', val_teacher_rationales)
 
-    # Tokenize labels for student model
-    def tokenize_labels(examples):
-        labels = examples['labels']
-        tokenized_labels = student_tokenizer(
-            labels,
-            max_length=128,
-            truncation=True
-        )
-        examples['labels'] = tokenized_labels['input_ids']
-        return examples
 
-    train_dataset = train_dataset.map(tokenize_labels, batched=True)
-    val_dataset = val_dataset.map(tokenize_labels, batched=True)
 
 
     # Define custom trainer with hidden state distillation
@@ -242,16 +250,15 @@ def main():
             current_device = next(model.parameters()).device
             inputs = {k: v.to(current_device) for k, v in inputs.items()}
             labels = inputs.get("labels")
-            # Prepare decoder input IDs
-            decoder_input_ids = model.prepare_decoder_input_ids_from_labels(labels)
-            inputs['decoder_input_ids'] = decoder_input_ids.to(current_device)
 
+            # Forward pass
             outputs = model(**inputs, output_hidden_states=True)
             student_loss = outputs.loss
 
             if model.training:
                 # Get the student's last hidden state
-                student_hidden_states = outputs.decoder_hidden_states[-1]  # Shape: [batch_size, seq_length, 512]
+                student_hidden_states = outputs.decoder_hidden_states[
+                    -1]  # Shape: [batch_size, seq_length, hidden_size]
 
                 with torch.no_grad():
                     # Move teacher model to the same device as student model
@@ -259,11 +266,11 @@ def main():
                     teacher_outputs = self.teacher_model(
                         input_ids=inputs['input_ids'],
                         attention_mask=inputs['attention_mask'],
-                        decoder_input_ids=inputs['decoder_input_ids'],
+                        decoder_input_ids=model.prepare_decoder_input_ids_from_labels(labels),
                         output_hidden_states=True,
                     )
                     teacher_hidden_states = teacher_outputs.decoder_hidden_states[
-                        -1]  # Shape: [batch_size, seq_length, 768]
+                        -1]  # Shape: [batch_size, seq_length, teacher_hidden_size]
 
                     # Project teacher hidden states to match student hidden size
                     projected_teacher_hidden_states = self.projection_layer(teacher_hidden_states)
@@ -273,11 +280,14 @@ def main():
 
                 # Total loss
                 total_loss = student_loss + self.hidden_weight * mse_loss
+                print(f"Student Loss: {student_loss.item()}, MSE Loss: {mse_loss.item()}")
             else:
                 # During evaluation, only compute student_loss
                 total_loss = student_loss
+                print(f"Validation Loss: {student_loss.item()}")
 
             return (total_loss, outputs) if return_outputs else total_loss
+
 
         # def evaluate(self, eval_dataset=None, ignore_keys=None, metric_key_prefix: str = "eval"):
         #     # Move model to CPU before evaluation
@@ -313,7 +323,7 @@ def main():
         per_device_train_batch_size=hyperparams['per_device_train_batch_size'],
         per_device_eval_batch_size=hyperparams['per_device_eval_batch_size'],
         learning_rate=hyperparams['learning_rate'],
-        evaluation_strategy=hyperparams['evaluation_strategy'],
+        eval_strategy=hyperparams['evaluation_strategy'],
         eval_steps=hyperparams['eval_steps'],
         save_strategy=hyperparams['save_strategy'],
         save_steps=hyperparams['save_steps'],
@@ -406,7 +416,7 @@ def main():
                 input_ids=input_ids,
                 attention_mask=attention_mask,
                 max_length=150,
-                num_beams=1,
+                num_beams=4,
                 early_stopping=True
             )
         output_text = student_tokenizer.decode(output_ids[0], skip_special_tokens=True)
@@ -468,11 +478,11 @@ def main():
             f.write(f"Input: {input_text}\n")
             f.write(f"Actual Answer: {val_actual_answers[idx]}\n")
             f.write(f"Teacher's Output: {val_teacher_outputs[idx]}\n")
-            f.write(f"Teacher's Answer: {teacher_predictions[idx]}\n")
-            f.write(f"Teacher's Rationale: {val_teacher_rationales[idx]}\n")
+            # f.write(f"Teacher's Answer: {teacher_predictions[idx]}\n")
+            # f.write(f"Teacher's Rationale: {val_teacher_rationales[idx]}\n")
             f.write(f"Student's Output: {student_predictions[idx]}\n")
-            f.write(f"Student's Answer: {student_pred_answers[idx]}\n")
-            f.write(f"Student's Rationale: {student_rationales[idx]}\n")
+            # f.write(f"Student's Answer: {student_pred_answers[idx]}\n")
+            # f.write(f"Student's Rationale: {student_rationales[idx]}\n")
 
     print(f"Training complete. Report saved to {output_report}")
     logger.info(f"Training complete. Report saved to {output_report}")
