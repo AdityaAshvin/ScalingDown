@@ -518,7 +518,7 @@ def main():
         validation_accuracies = []
 
         for log in trainer.state.log_history:
-            if 'loss' in log and 'mse_loss' in log:
+            if 'student_loss' in log and 'mse_loss' in log:
                 training_losses.append(log['student_loss'])
                 mse_losses.append(log['mse_loss'])
             if 'eval_loss' in log and 'eval_accuracy' in log:
