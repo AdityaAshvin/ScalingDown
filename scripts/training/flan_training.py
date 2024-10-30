@@ -21,7 +21,7 @@ import yaml
 from tqdm import tqdm
 from sklearn.metrics import accuracy_score
 import time
-from scripts.training.callback import PrintSampleCallback
+from scripts.training.callback import PrintSampleCallback, LossCollectorCallback
 from scripts.training.util import extract_answer, extract_rationale
 from scripts.data_preprocessing.data_preprocessing_flan import get_preprocessed_data
 
@@ -66,7 +66,7 @@ def parse_args():
     return args
 
 
-def generate_training_graph(validation_losses, training_losses, mse_losses, validation_accuracies,
+def generate_training_graph(training_losses, mse_losses,
                             training_graph_path, validation_graph_path):
     # Plotting training and MSE loss against steps
     if len(training_losses) == 0:
@@ -87,20 +87,6 @@ def generate_training_graph(validation_losses, training_losses, mse_losses, vali
     plt.close()
     print(f"Saved training loss graph in {training_graph_path}")
 
-    # Plotting validation accuracy separately if available
-    if len(validation_accuracies) > 0:
-        epochs = range(1, len(validation_accuracies) + 1)
-        plt.figure(figsize=(10, 6))
-        plt.plot(epochs, validation_accuracies, label='Validation Accuracy', color='green')
-        plt.xlabel('Epochs')
-        plt.ylabel('Accuracy')
-        plt.title('Validation Accuracy Over Epochs')
-        plt.legend()
-        plt.grid(True)
-        plt.savefig(validation_graph_path)
-        plt.close()
-    else:
-        print("No validation accuracy to plot.")
 
 
 
@@ -402,6 +388,7 @@ def main():
         correct_answer=correct_answer,
         interval_steps=hyperparams['logging_steps']  # Align with logging_steps for consistency
     )
+    loss_collector = LossCollectorCallback()
 
     # Hidden weight from hyperparameters
     hidden_weight = hyperparams['hidden_weight']
@@ -439,8 +426,7 @@ def main():
         teacher_model=teacher_model,
         hidden_weight=hidden_weight,
         compute_metrics=compute_metrics,
-        # callbacks=[EarlyStoppingCallback(early_stopping_patience=3), print_sample_callback],
-        callbacks=[print_sample_callback],
+        callbacks=[print_sample_callback, loss_collector],
     )
 
     # Training
@@ -512,18 +498,9 @@ def main():
         f.write(f"Epochs completed: {train_result.metrics['epoch']:.1f}\n\n")
 
         # Extract training and evaluation metrics from log_history
-        training_losses = []
-        mse_losses = []
-        validation_losses = []
-        validation_accuracies = []
-
-        for log in trainer.state.log_history:
-            if 'student_loss' in log and 'mse_loss' in log:
-                training_losses.append(log['student_loss'])
-                mse_losses.append(log['mse_loss'])
-            if 'eval_loss' in log and 'eval_accuracy' in log:
-                validation_losses.append(log['eval_loss'])
-                validation_accuracies.append(log['eval_accuracy'])
+        training_losses = loss_collector.student_losses
+        mse_losses = loss_collector.mse_losses
+        steps = loss_collector.steps
 
             # Training progress evaluation
         if len(training_losses) > 0:
@@ -567,7 +544,7 @@ def main():
     print(f"Training complete. Report saved to {output_report_path}")
     logger.info(f"Training complete. Report saved to {output_report_path}")
 
-    generate_training_graph(validation_losses, training_losses, mse_losses, validation_accuracies,
+    generate_training_graph(training_losses, mse_losses,
                             training_graph_path, validation_graph_path)
 
 

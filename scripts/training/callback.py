@@ -42,3 +42,24 @@ class PrintSampleCallback(TrainerCallback):
                 print(f"Output: {output_text}\n")
 
         super().on_log(args, state, control, logs=logs, **kwargs)
+
+
+class LossCollectorCallback(TrainerCallback):
+    def __init__(self):
+        super().__init__()
+        self.student_losses = []
+        self.mse_losses = []
+        self.steps = []
+
+    def on_log(self, args, state, control, logs=None, **kwargs):
+        """
+        Collects 'student_loss' and 'mse_loss' from logs at each logging step.
+        """
+        if logs is not None:
+            if 'student_loss' in logs and 'mse_loss' in logs:
+                self.student_losses.append(logs['student_loss'])
+                self.mse_losses.append(logs['mse_loss'])
+                self.steps.append(state.global_step)
+
+            else:
+                print("no student_loss and mse_loss found in log")
