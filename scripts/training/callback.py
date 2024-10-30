@@ -41,4 +41,4 @@ class PrintSampleCallback(TrainerCallback):
                 print(f"Predicted Answer: {predicted_answer}")
                 print(f"Output: {output_text}\n")
 
-        super().on_log(args, state, control, logs, model, **kwargs)
+        super().on_log(args, state, control, logs=logs, **kwargs)
