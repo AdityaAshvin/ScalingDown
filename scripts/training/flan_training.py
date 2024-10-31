@@ -76,8 +76,8 @@ def generate_training_graph(training_losses, mse_losses,
     steps = range(1, len(training_losses) + 1)
 
     plt.figure(figsize=(10, 6))
-    plt.plot(steps, training_losses, label='Training Loss')
-    plt.plot(steps, mse_losses, label='MSE Loss')
+    plt.plot(steps, training_losses, label='Answer Loss')
+    plt.plot(steps, mse_losses, label='Hidden-layer Loss')
     plt.xlabel('Training Steps')
     plt.ylabel('Loss')
     plt.title('Training and MSE Loss Over Steps')
@@ -101,8 +101,8 @@ def main():
     output_report_dir = args.output_report
     timestamp = datetime.now().strftime("%Y%m%d_%H%M")
     output_report_path = os.path.join(output_report_dir, f"{timestamp}-training_report.txt")
-    training_graph_path = os.path.join(output_report_path, f"{timestamp}-training_graph.png")
-    validation_graph_path = os.path.join(output_report_path, f"{timestamp}-validation_graph.png")
+    training_graph_path = os.path.join(output_report_dir, f"{timestamp}-training_graph.png")
+    validation_graph_path = os.path.join(output_report_dir, f"{timestamp}-validation_graph.png")
 
     # Get device
     device, on_gpu = get_device()
@@ -307,16 +307,18 @@ def main():
                 # Compute MSE loss between student and projected teacher hidden states
                 mse_loss = F.mse_loss(student_hidden_states, projected_teacher_hidden_states)
 
-                # Log the losses
-                if self.control.should_log:
-                    self.log({
-                        "student_loss": student_loss.item(),
-                        "mse_loss": mse_loss.item()
-                    })
-
                 # Total loss
                 total_loss = student_loss + self.hidden_weight * mse_loss
                 # print(f"Student Loss: {student_loss.item()}, MSE Loss: {mse_loss.item()}")
+
+                self.log(
+                    {
+                        "student_loss": student_loss.detach().item(),
+                        "mse_loss": mse_loss.detach().item()
+                    }
+                )
+
+
             else:
                 # During evaluation, only compute student_loss
                 total_loss = student_loss

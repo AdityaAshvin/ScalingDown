@@ -60,6 +60,5 @@ class LossCollectorCallback(TrainerCallback):
                 self.student_losses.append(logs['student_loss'])
                 self.mse_losses.append(logs['mse_loss'])
                 self.steps.append(state.global_step)
-
             else:
                 print("no student_loss and mse_loss found in log")
