@@ -142,7 +142,7 @@ def main():
     # Use portion of dataset
     if data_portion < 1.0:
         num_train_examples = max(5, int(len(train_dataset) * data_portion))
-        num_val_examples = max(150, int(len(val_dataset) * data_portion))
+        num_val_examples = max(200, int(len(val_dataset) * data_portion))
         train_dataset = train_dataset.shuffle(seed=42).select(range(num_train_examples))
         val_dataset = val_dataset.shuffle(seed=42).select(range(num_val_examples))
 
