@@ -1,0 +1,80 @@
+# config/config.yaml
+
+# ----------------------------------
+# 1. Tokenizer Configuration
+# ----------------------------------
+tokenizer:
+  name: "t5-base"                  # Name or path of the tokenizer/model. E.g., "t5-base" or a local path.
+  save_dir: "tokenizers"           # Directory where the tokenizer will be saved or loaded from.
+
+# ----------------------------------
+# 2. Dataset Configuration
+# ----------------------------------
+datasets:
+  winograd:
+    name: "winogrande"
+    config: "winogrande_xl"
+    path: "datasets/winograd_tokenized.pth"
+  
+  piqa:
+    name: "piqa"
+    path: "datasets/piqa_tokenized.pth"           # Path to save the preprocessed PIQA dataset.
+  
+  story_cloze:
+    name: "story_cloze"
+    config: "2018"
+    path: "datasets/story_cloze_tokenized.pth"    # Path to save the preprocessed Story Cloze dataset.
+  
+  anli:
+    name: "anli"
+    path: "datasets/anli_tokenized.pth"           # Path to save the preprocessed aNLI dataset.
+
+# ----------------------------------
+# 3. Preprocessing Settings
+# ----------------------------------
+preprocessing:
+  padding: "max_length"          # Padding strategy: "max_length" or "longest".
+  truncation: true               # Whether to truncate sequences exceeding max_length.
+  max_length_stage1: 256         # Maximum token length for Stage 1 inputs.
+  max_length_labels_stage1: 2    # Maximum token length for Stage 1 labels.
+  max_length_stage2: 512         # Maximum token length for Stage 2 inputs.
+  max_length_labels_stage2: 2    # Maximum token length for Stage 2 labels.
+  max_length_stage3: 512         # Maximum token length for Stage 3 inputs.
+  max_length_labels_stage3: 2    # Maximum token length for Stage 3 labels.
+  num_proc: 4                    # Number of parallel processes for preprocessing.
+
+
+# ----------------------------------
+# 4. Training Hyperparameters
+# ----------------------------------
+training:
+  batch_size: 8                           # Optimized batch size.
+  learning_rate: 0.000032331     # Optimized learning rate.
+  dropout_rate: 0.2100        # Optimized dropout rate.
+  weight_decay: 0.0223       # Optimized weight decay.
+  penalty_weight: 1.0                      # Weight for the penalty term in the custom loss function.
+  blank_penalty: 0.1                      # Penalty for blank answers in the custom loss function.
+  length_penalty_weight: 0.1               # Penalty weight for longer-than-one-token answers.
+  repeat_penalty: 1.3
+  single_token_bonus: 0.3                  # Bonus for single-token answers.
+  num_epochs_stage1: 6                     # Number of training epochs for Stage 1.
+  num_epochs_stage2: 3                     # Number of training epochs for Stage 2.
+  num_epochs_stage3: 3                     # Number of training epochs for Stage 3.
+  warmup_steps: 0                          # Optimized warmup steps.
+
+# ----------------------------------
+# 5. Logging and Checkpointing
+# ----------------------------------
+logging:
+  log_file: "logs/training.log"    # Path to save training and validation logs.
+
+checkpointing:
+  save_dir: "checkpoints"          # Directory to save and load model checkpoints.
+  checkpoint_frequency_batches: 200        # Frequency of checkpoint saving in batches.
+
+# ----------------------------------
+# 6. Additional Configurations
+# ----------------------------------
+random_seed: 42  # For reproducibility. You can set this in training.py as well.
+scheduler:
+  type: "linear"  # Options: "linear", "cosine", etc.

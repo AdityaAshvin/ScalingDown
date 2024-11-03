@@ -1,0 +1,27 @@
+2024-11-02 11:46:44,179 - INFO - Loading tokenizer from tokenizers/t5-base...
+2024-11-02 11:46:44,265 - INFO - Loading winograd dataset for Stage 1...
+/home/albert/miniconda3/envs/scalingDownEnv/lib/python3.9/site-packages/datasets/load.py:1429: FutureWarning: The repository for winogrande contains custom code which must be executed to correctly load the dataset. You can inspect the repository content at https://hf.co/datasets/winogrande
+You can avoid this message in future by passing the argument `trust_remote_code=True`.
+Passing `trust_remote_code=True` will be mandatory to load this dataset from the next major release of `datasets`.
+  warnings.warn(
+2024-11-02 11:46:46,378 - INFO - Preprocessing winograd dataset for Stage 1...
+2024-11-02 11:46:46,393 - INFO - Successfully saved tokenized dataset to datasets/winograd_tokenized.pth.
+2024-11-02 11:46:46,412 - INFO - Loading piqa dataset for Stage 2...
+/home/albert/miniconda3/envs/scalingDownEnv/lib/python3.9/site-packages/datasets/load.py:1429: FutureWarning: The repository for piqa contains custom code which must be executed to correctly load the dataset. You can inspect the repository content at https://hf.co/datasets/piqa
+You can avoid this message in future by passing the argument `trust_remote_code=True`.
+Passing `trust_remote_code=True` will be mandatory to load this dataset from the next major release of `datasets`.
+  warnings.warn(
+2024-11-02 11:46:49,117 - INFO - Preprocessing piqa dataset for Stage 2...
+2024-11-02 11:46:49,132 - INFO - Successfully saved tokenized dataset to datasets/piqa_tokenized.pth.
+2024-11-02 11:46:49,149 - INFO - Loading anli dataset for Stage 3...
+2024-11-02 11:47:00,505 - INFO - Preprocessing anli dataset for Stage 3...
+
+Sample Winograd Input: Sentence: Ian volunteered to eat Dennis's menudo after already having a bowl because _ despised eating intestine. Option1: Ian Option2: Dennis Answer:
+Sample Winograd Label: 2
+
+
+Sample Piqa Input: Goal: When boiling butter, when it's ready, you can Option1: Pour it onto a plate Option2: Pour it into a jar Answer:
+Sample Piqa Label: 2
+
+Map (num_proc=4):   0%|          | 0/16946 [00:00<?, ? examples/s]Map (num_proc=4):   0%|          | 0/16946 [00:00<?, ? examples/s]
+2024-11-02 11:47:00,666 - ERROR - Error during anli preprocessing: You should supply an encoding or a list of encodings to this method that includes input_ids, but you provided []
