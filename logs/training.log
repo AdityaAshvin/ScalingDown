@@ -1207,3 +1207,97 @@
 2024-11-03 23:44:18,090 - INFO - Epoch 4, Batch 13404, Training Loss: 316.0497, Validation Loss: 0.3507, Validation Accuracy: 0.0000
 2024-11-03 23:44:51,712 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
 2024-11-03 23:45:46,948 - INFO - Epoch 4, Batch 13406, Training Loss: 293.8121, Validation Loss: 0.3502, Validation Accuracy: 0.0000
+2024-11-03 23:47:11,724 - INFO - Epoch 4, Batch 13408, Training Loss: 362.0698, Validation Loss: 0.3512, Validation Accuracy: 0.0000
+2024-11-03 23:48:36,080 - INFO - Epoch 4, Batch 13410, Training Loss: 327.8342, Validation Loss: 0.3478, Validation Accuracy: 0.0000
+2024-11-03 23:48:46,356 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 23:50:09,185 - INFO - Epoch 4, Batch 13412, Training Loss: 320.7214, Validation Loss: 0.3486, Validation Accuracy: 1.0000
+2024-11-03 23:51:34,562 - INFO - Epoch 4, Batch 13414, Training Loss: nan, Validation Loss: 0.3456, Validation Accuracy: 1.0000
+2024-11-03 23:52:07,201 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 23:53:00,590 - INFO - Epoch 4, Batch 13416, Training Loss: 232.8727, Validation Loss: 0.3497, Validation Accuracy: 0.0000
+2024-11-03 23:54:24,371 - INFO - Epoch 4, Batch 13418, Training Loss: 201.7433, Validation Loss: 0.3482, Validation Accuracy: 1.0000
+2024-11-03 23:55:47,381 - INFO - Epoch 4, Batch 13420, Training Loss: 94.8976, Validation Loss: 0.3457, Validation Accuracy: 0.0000
+2024-11-03 23:55:56,023 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 23:56:25,371 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:56:26,802 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 23:56:26,802 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 23:56:30,426 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_4.pth
+2024-11-03 23:56:30,426 - INFO - Epoch 4 completed. Average Training Loss: 0.0000
+2024-11-03 23:59:18,990 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:59:20,381 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 23:59:20,381 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 23:59:29,107 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_4.pth
+2024-11-03 23:59:29,108 - INFO - Epoch 4 completed. Average Training Loss: 0.0000
+2024-11-04 00:00:23,080 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:00:24,494 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:00:24,495 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:00:30,565 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_4.pth
+2024-11-04 00:00:30,566 - INFO - Epoch 4 completed. Average Training Loss: 0.0000
+2024-11-04 00:00:54,635 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:00:56,048 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:00:56,048 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:00:59,581 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_4.pth
+2024-11-04 00:00:59,581 - INFO - Epoch 4 completed. Average Training Loss: 0.0000
+2024-11-04 00:11:13,983 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:11:15,394 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:11:15,394 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:18:56,498 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:18:57,910 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:18:57,910 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:19:50,561 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:19:51,982 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:19:51,982 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:19:55,501 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_5.pth
+2024-11-04 00:19:55,501 - INFO - Epoch 5 completed. Average Training Loss: 0.0000
+2024-11-04 00:20:15,733 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:20:17,113 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:20:17,113 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:20:21,687 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_5.pth
+2024-11-04 00:20:21,688 - INFO - Epoch 5 completed. Average Training Loss: 0.0000
+2024-11-04 00:20:46,737 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:20:48,001 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:20:48,001 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:20:51,465 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_4.pth
+2024-11-04 00:20:51,465 - INFO - Epoch 4 completed. Average Training Loss: 0.0000
+2024-11-04 00:21:47,722 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:21:48,967 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:21:48,967 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:21:52,354 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_4.pth
+2024-11-04 00:21:52,355 - INFO - Epoch 4 completed. Average Training Loss: 0.0000
+2024-11-04 00:24:12,873 - INFO - Epoch 5, Batch 5, Training Loss: 82.2220, Validation Loss: 0.3439, Validation Accuracy: 0.0000
+2024-11-04 00:27:04,189 - INFO - Epoch 5, Batch 10, Training Loss: 300.2704, Validation Loss: 0.3502, Validation Accuracy: 0.0000
+2024-11-04 00:27:16,100 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-04 00:29:09,726 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:29:11,104 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:29:11,104 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:29:14,690 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_6.pth
+2024-11-04 00:29:14,691 - INFO - Epoch 6 completed. Average Training Loss: 0.0000
+2024-11-04 00:29:36,558 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:29:37,920 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:29:37,920 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:29:41,476 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_6.pth
+2024-11-04 00:29:41,476 - INFO - Epoch 6 completed. Average Training Loss: 0.0000
+2024-11-04 00:29:56,910 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:29:58,286 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:29:58,286 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:30:01,833 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_6.pth
+2024-11-04 00:30:01,833 - INFO - Epoch 6 completed. Average Training Loss: 0.0000
+2024-11-04 00:32:22,729 - INFO - Epoch 7, Batch 5, Training Loss: 68.2295, Validation Loss: 0.3454, Validation Accuracy: 0.0000
+2024-11-04 00:41:17,047 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:41:18,363 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:41:18,363 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:41:21,809 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_5.pth
+2024-11-04 00:41:21,809 - INFO - Epoch 5 completed. Average Training Loss: 0.0000
+2024-11-04 00:41:46,486 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:41:47,713 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:41:47,713 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:41:51,105 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_3.pth
+2024-11-04 00:41:51,105 - INFO - Epoch 3 completed. Average Training Loss: 0.0000
+2024-11-04 00:44:11,111 - INFO - Epoch 4, Batch 6, Training Loss: 74.2162, Validation Loss: 0.3459, Validation Accuracy: 0.0000
+2024-11-04 00:46:55,386 - INFO - Epoch 4, Batch 11, Training Loss: 280.6547, Validation Loss: 0.3472, Validation Accuracy: 0.0000
+2024-11-04 00:47:01,347 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-04 00:47:45,310 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:47:46,593 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:47:46,593 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-04 00:48:18,475 - INFO - PyTorch version 2.5.0 available.
+2024-11-04 00:48:19,754 - INFO - Scheduler state loaded from checkpoint.
+2024-11-04 00:48:19,754 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.

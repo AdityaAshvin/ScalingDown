@@ -232,6 +232,7 @@ def save_checkpoint(model, optimizer, scheduler, epoch, batch, checkpoint_dir, i
     checkpoint = {
         'epoch': epoch,
         'batch': batch,
+        'is_epoch_end': is_epoch_end,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'scheduler_state_dict': scheduler.state_dict() if scheduler else None,
@@ -259,7 +260,13 @@ def load_checkpoint(model, optimizer, scheduler, checkpoint_dir):
     checkpoint_path = os.path.join(checkpoint_dir, "checkpoint.pth")
     if not os.path.exists(checkpoint_path):
         logging.info("No checkpoint found. Starting from scratch.")
-        return {'epoch': 0, 'batch': 0, 'best_val_loss': float('inf'), 'best_val_accuracy': 0.0, 'previous_answers': []}
+        return {
+            'epoch': 0, 
+            'batch': 0, 
+            'best_val_loss': float('inf'), 
+            'best_val_accuracy': 0.0, 
+            'previous_answers': []
+        }
 
     # Load the checkpoint
     checkpoint = torch.load(checkpoint_path, map_location='cpu')
@@ -272,9 +279,21 @@ def load_checkpoint(model, optimizer, scheduler, checkpoint_dir):
 
     logging.info(f"Loaded checkpoint from {checkpoint_path}.")
 
+    # Determine if the checkpoint was saved at epoch end
+    is_epoch_end = checkpoint.get('is_epoch_end', False)
+
+    if is_epoch_end:
+        # If the checkpoint was saved at the end of an epoch, start from the next epoch
+        start_epoch = checkpoint.get('epoch', 0) + 1
+        start_batch = 0
+    else:
+        # If the checkpoint was saved during an epoch, continue from the same epoch and batch
+        start_epoch = checkpoint.get('epoch', 0)
+        start_batch = checkpoint.get('batch', 0)
+
     return {
-        'epoch': checkpoint.get('epoch', 0),
-        'batch': checkpoint.get('batch', 0),
+        'epoch': start_epoch,
+        'batch': start_batch,
         'best_val_loss': checkpoint.get('best_val_loss', float('inf')),
         'best_val_accuracy': checkpoint.get('best_val_accuracy', 0.0),
         'previous_answers': checkpoint.get('previous_answers', [])
@@ -353,6 +372,7 @@ def main():
         student_model.train()
         epoch_loss = 0.0
         batch_count = 0
+        current_batch = 0
         batch_idx = -1
         
         # Wrap train_loader in tqdm for progress bar display
@@ -369,8 +389,14 @@ def main():
                     next(train_loader_iter)
                 except StopIteration:
                     break
+            current_batch = start_batch  # Set the current batch to start_batch
 
-        for batch_idx, batch in enumerate(train_loader_iter, start=start_batch):            
+        for batch_idx, batch in enumerate(train_loader_iter, start=1):
+            if epoch == start_epoch and current_batch < start_batch:
+                current_batch += 1
+                continue
+
+
             global_batch_count += 1  # Increment global batch count
             input_ids = batch['input_ids'].to(device)
             labels = batch['labels'].to(device)
@@ -422,21 +448,22 @@ def main():
 
             epoch_loss += loss.item()
             batch_count += 1
+            current_batch += 1
 
             # Logging and validation at specified intervals
-            if (batch_idx + 1) % validation_frequency == 0:
+            if (batch_idx) % validation_frequency == 0:
                 val_loss, accuracy = validate(student_model, teacher_model, tokenizer, val_loader, device, pad_token_id)
                 logging.info(f"Epoch {epoch + 1}, Batch {batch_idx + 1}, Training Loss: {loss.item():.4f}, Validation Loss: {val_loss:.4f}, Validation Accuracy: {accuracy:.4f}")
 
             # Save checkpoints periodically based on configuration
             if global_batch_count % config["checkpointing"]["checkpoint_frequency_batches"] == 0:
                 save_checkpoint(
-                    student_model, optimizer, scheduler, epoch, global_batch_count, checkpoint_dir, False, previous_answers
+                    student_model, optimizer, scheduler, epoch, batch_idx, checkpoint_dir, False, previous_answers
                 )
 
         # Save checkpoint at the end of each epoch
         save_checkpoint(
-            student_model, optimizer, scheduler, epoch, batch_idx, checkpoint_dir, True, previous_answers
+            student_model, optimizer, scheduler, epoch, batch_idx if batch_idx >=0 else 0, checkpoint_dir, True, previous_answers
         )
 
         # Log the average loss for this epoch
