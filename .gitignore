@@ -7,4 +7,5 @@
 *.pth
 *.safetensors
 events.*
-*.old
+*.old*
+*.log

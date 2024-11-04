@@ -463,3 +463,747 @@
 2024-11-03 14:01:02,889 - INFO - Epoch 3, Global Batch 9725, Training Loss: 0.2410, Validation Loss: 0.4273, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6000
 2024-11-03 14:01:31,237 - INFO - Epoch 3, Global Batch 9750, Training Loss: 0.2185, Validation Loss: 0.3807, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6667
 2024-11-03 14:01:59,611 - INFO - Epoch 3, Global Batch 9775, Training Loss: 0.2582, Validation Loss: 0.3385, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5714
+2024-11-03 14:02:27,485 - INFO - Epoch 3, Global Batch 9800, Training Loss: 0.2346, Validation Loss: 0.3958, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5000
+2024-11-03 14:02:39,462 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:03:07,300 - INFO - Epoch 3, Global Batch 9825, Training Loss: 0.2328, Validation Loss: 0.3982, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4444
+2024-11-03 14:03:35,656 - INFO - Epoch 3, Global Batch 9850, Training Loss: 0.2260, Validation Loss: 0.3277, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5000
+2024-11-03 14:04:04,343 - INFO - Epoch 3, Global Batch 9875, Training Loss: 0.2818, Validation Loss: 0.4149, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4545
+2024-11-03 14:04:32,305 - INFO - Epoch 3, Global Batch 9900, Training Loss: 0.2457, Validation Loss: 0.3209, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5000
+2024-11-03 14:05:00,152 - INFO - Epoch 3, Global Batch 9925, Training Loss: 0.2646, Validation Loss: 0.4072, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4615
+2024-11-03 14:05:28,532 - INFO - Epoch 3, Global Batch 9950, Training Loss: 0.2247, Validation Loss: 0.3949, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5000
+2024-11-03 14:05:56,618 - INFO - Epoch 3, Global Batch 9975, Training Loss: 0.2884, Validation Loss: 0.3278, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5333
+2024-11-03 14:06:24,023 - INFO - Epoch 3, Global Batch 10000, Training Loss: 0.2342, Validation Loss: 0.4280, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5000
+2024-11-03 14:06:27,174 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:06:54,613 - INFO - Epoch 3, Global Batch 10025, Training Loss: 0.2207, Validation Loss: 0.4191, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4706
+2024-11-03 14:07:21,854 - INFO - Epoch 3, Global Batch 10050, Training Loss: 0.2240, Validation Loss: 0.3073, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5000
+2024-11-03 14:07:49,041 - INFO - Epoch 3, Global Batch 10075, Training Loss: 0.2100, Validation Loss: 0.3182, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5263
+2024-11-03 14:08:16,261 - INFO - Epoch 3, Global Batch 10100, Training Loss: 0.2035, Validation Loss: 0.3172, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5500
+2024-11-03 14:08:43,484 - INFO - Epoch 3, Global Batch 10125, Training Loss: 0.2311, Validation Loss: 0.3968, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5714
+2024-11-03 14:09:10,704 - INFO - Epoch 3, Global Batch 10150, Training Loss: 0.2380, Validation Loss: 0.3873, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5909
+2024-11-03 14:09:38,025 - INFO - Epoch 3, Global Batch 10175, Training Loss: 0.2373, Validation Loss: 0.4049, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5652
+2024-11-03 14:10:05,241 - INFO - Epoch 3, Global Batch 10200, Training Loss: 0.2461, Validation Loss: 0.3395, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5417
+2024-11-03 14:10:08,358 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:10:35,577 - INFO - Epoch 3, Global Batch 10225, Training Loss: 0.2342, Validation Loss: 0.3132, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:11:02,819 - INFO - Epoch 3, Global Batch 10250, Training Loss: 0.2255, Validation Loss: 0.3151, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:11:30,019 - INFO - Epoch 3, Global Batch 10275, Training Loss: 0.2756, Validation Loss: 0.3221, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:11:57,298 - INFO - Epoch 3, Global Batch 10300, Training Loss: 0.2187, Validation Loss: 0.3191, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:12:24,542 - INFO - Epoch 3, Global Batch 10325, Training Loss: 0.2584, Validation Loss: 0.3055, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:12:51,792 - INFO - Epoch 3, Global Batch 10350, Training Loss: 0.2541, Validation Loss: 0.4547, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:13:18,969 - INFO - Epoch 3, Global Batch 10375, Training Loss: 0.2246, Validation Loss: 0.2802, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:13:46,239 - INFO - Epoch 3, Global Batch 10400, Training Loss: 0.3050, Validation Loss: 0.4341, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:13:52,818 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:14:19,958 - INFO - Epoch 3, Global Batch 10425, Training Loss: 0.2615, Validation Loss: 0.4334, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 14:14:47,231 - INFO - Epoch 3, Global Batch 10450, Training Loss: 0.2760, Validation Loss: 0.4514, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 14:15:14,381 - INFO - Epoch 3, Global Batch 10475, Training Loss: 0.2578, Validation Loss: 0.2832, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:15:41,845 - INFO - Epoch 3, Global Batch 10500, Training Loss: 0.2242, Validation Loss: 0.4365, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:16:09,309 - INFO - Epoch 3, Global Batch 10525, Training Loss: 0.2438, Validation Loss: 0.4950, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:16:36,705 - INFO - Epoch 3, Global Batch 10550, Training Loss: 0.2787, Validation Loss: 0.2622, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:17:04,506 - INFO - Epoch 3, Global Batch 10575, Training Loss: 0.2334, Validation Loss: 0.2900, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:17:33,310 - INFO - Epoch 3, Global Batch 10600, Training Loss: 0.2386, Validation Loss: 0.3797, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:17:36,519 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:18:05,565 - INFO - Epoch 3, Global Batch 10625, Training Loss: 0.2515, Validation Loss: 0.3011, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 14:18:33,961 - INFO - Epoch 3, Global Batch 10650, Training Loss: 0.2552, Validation Loss: 0.4728, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 14:19:02,866 - INFO - Epoch 3, Global Batch 10675, Training Loss: 0.2657, Validation Loss: 0.4117, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 14:19:31,776 - INFO - Epoch 3, Global Batch 10700, Training Loss: 0.2600, Validation Loss: 0.3236, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 14:20:00,668 - INFO - Epoch 3, Global Batch 10725, Training Loss: 0.2583, Validation Loss: 0.4667, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:20:29,613 - INFO - Epoch 3, Global Batch 10750, Training Loss: 0.2420, Validation Loss: 0.4585, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:20:58,494 - INFO - Epoch 3, Global Batch 10775, Training Loss: 0.2456, Validation Loss: 0.4812, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:21:26,369 - INFO - Epoch 3, Global Batch 10800, Training Loss: 0.2211, Validation Loss: 0.4641, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:21:36,493 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:22:03,765 - INFO - Epoch 3, Global Batch 10825, Training Loss: 0.2694, Validation Loss: 0.4139, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:22:31,248 - INFO - Epoch 3, Global Batch 10850, Training Loss: 0.2239, Validation Loss: 0.4260, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:23:00,005 - INFO - Epoch 3, Global Batch 10875, Training Loss: 0.2502, Validation Loss: 0.3285, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:23:29,106 - INFO - Epoch 3, Global Batch 10900, Training Loss: 0.2176, Validation Loss: 0.4344, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:23:58,196 - INFO - Epoch 3, Global Batch 10925, Training Loss: 0.2695, Validation Loss: 0.3784, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:24:26,856 - INFO - Epoch 3, Global Batch 10950, Training Loss: 0.2896, Validation Loss: 0.2771, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:24:54,183 - INFO - Epoch 3, Global Batch 10975, Training Loss: 0.2303, Validation Loss: 0.4821, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:25:23,152 - INFO - Epoch 3, Global Batch 11000, Training Loss: 0.2292, Validation Loss: 0.4732, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 14:25:33,857 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:26:02,714 - INFO - Epoch 3, Global Batch 11025, Training Loss: 0.2443, Validation Loss: 0.3079, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:26:31,415 - INFO - Epoch 3, Global Batch 11050, Training Loss: 0.2998, Validation Loss: 0.3279, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 14:27:00,299 - INFO - Epoch 3, Global Batch 11075, Training Loss: 0.2190, Validation Loss: 0.4603, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 14:27:28,957 - INFO - Epoch 3, Global Batch 11100, Training Loss: 0.2614, Validation Loss: 0.3807, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:27:56,395 - INFO - Epoch 3, Global Batch 11125, Training Loss: 0.2507, Validation Loss: 0.3507, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:28:23,840 - INFO - Epoch 3, Global Batch 11150, Training Loss: 0.1967, Validation Loss: 0.3998, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:28:51,569 - INFO - Epoch 3, Global Batch 11175, Training Loss: 0.2563, Validation Loss: 0.3247, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:29:18,994 - INFO - Epoch 3, Global Batch 11200, Training Loss: 0.2386, Validation Loss: 0.3365, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:29:22,174 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:29:50,463 - INFO - Epoch 3, Global Batch 11225, Training Loss: 0.2403, Validation Loss: 0.3276, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:30:18,408 - INFO - Epoch 3, Global Batch 11250, Training Loss: 0.2590, Validation Loss: 0.3429, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:30:46,306 - INFO - Epoch 3, Global Batch 11275, Training Loss: 0.2554, Validation Loss: 0.3256, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:31:14,584 - INFO - Epoch 3, Global Batch 11300, Training Loss: 0.2753, Validation Loss: 0.3199, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:31:43,073 - INFO - Epoch 3, Global Batch 11325, Training Loss: 0.2765, Validation Loss: 0.3175, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 14:32:11,343 - INFO - Epoch 3, Global Batch 11350, Training Loss: 0.2591, Validation Loss: 0.3360, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 14:32:39,463 - INFO - Epoch 3, Global Batch 11375, Training Loss: 0.2391, Validation Loss: 0.3839, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:33:07,278 - INFO - Epoch 3, Global Batch 11400, Training Loss: 0.2599, Validation Loss: 0.2819, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:33:18,309 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:33:46,973 - INFO - Epoch 3, Global Batch 11425, Training Loss: 0.2385, Validation Loss: 0.4579, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:34:15,787 - INFO - Epoch 3, Global Batch 11450, Training Loss: 0.2396, Validation Loss: 0.4480, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:34:44,458 - INFO - Epoch 3, Global Batch 11475, Training Loss: 0.2609, Validation Loss: 0.2889, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:35:14,028 - INFO - Epoch 3, Global Batch 11500, Training Loss: 0.2714, Validation Loss: 0.3189, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:35:42,404 - INFO - Epoch 3, Global Batch 11525, Training Loss: 0.2477, Validation Loss: 0.3719, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:36:11,346 - INFO - Epoch 3, Global Batch 11550, Training Loss: 0.2777, Validation Loss: 0.2967, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:36:40,378 - INFO - Epoch 3, Global Batch 11575, Training Loss: 0.2124, Validation Loss: 0.2159, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:37:09,282 - INFO - Epoch 3, Global Batch 11600, Training Loss: 0.2580, Validation Loss: 0.3898, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:37:19,379 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:37:48,253 - INFO - Epoch 3, Global Batch 11625, Training Loss: 0.2477, Validation Loss: 0.3949, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:38:17,015 - INFO - Epoch 3, Global Batch 11650, Training Loss: 0.2726, Validation Loss: 0.3373, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:38:46,231 - INFO - Epoch 3, Global Batch 11675, Training Loss: 0.2248, Validation Loss: 0.3116, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:39:14,936 - INFO - Epoch 3, Global Batch 11700, Training Loss: 0.2576, Validation Loss: 0.3900, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:39:43,110 - INFO - Epoch 3, Global Batch 11725, Training Loss: 0.2682, Validation Loss: 0.2785, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:40:10,629 - INFO - Epoch 3, Global Batch 11750, Training Loss: 0.2360, Validation Loss: 0.3118, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:40:37,940 - INFO - Epoch 3, Global Batch 11775, Training Loss: 0.2300, Validation Loss: 0.4183, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:41:05,232 - INFO - Epoch 3, Global Batch 11800, Training Loss: 0.2627, Validation Loss: 0.2931, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:41:08,397 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:41:35,914 - INFO - Epoch 3, Global Batch 11825, Training Loss: 0.2340, Validation Loss: 0.3249, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:42:03,648 - INFO - Epoch 3, Global Batch 11850, Training Loss: 0.2540, Validation Loss: 0.3724, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:42:31,042 - INFO - Epoch 3, Global Batch 11875, Training Loss: 0.2727, Validation Loss: 0.3539, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:42:58,448 - INFO - Epoch 3, Global Batch 11900, Training Loss: 0.2339, Validation Loss: 0.2375, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:43:26,097 - INFO - Epoch 3, Global Batch 11925, Training Loss: 0.2402, Validation Loss: 0.2566, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:43:53,710 - INFO - Epoch 3, Global Batch 11950, Training Loss: 0.2424, Validation Loss: 0.3179, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:44:21,413 - INFO - Epoch 3, Global Batch 11975, Training Loss: 0.2926, Validation Loss: 0.3314, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:44:48,805 - INFO - Epoch 3, Global Batch 12000, Training Loss: 0.2595, Validation Loss: 0.3131, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:44:57,161 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:45:24,539 - INFO - Epoch 3, Global Batch 12025, Training Loss: 0.2812, Validation Loss: 0.2634, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 14:45:51,893 - INFO - Epoch 3, Global Batch 12050, Training Loss: 0.2379, Validation Loss: 0.2701, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:46:19,257 - INFO - Epoch 3, Global Batch 12075, Training Loss: 0.2799, Validation Loss: 0.2736, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:46:46,638 - INFO - Epoch 3, Global Batch 12100, Training Loss: 0.2227, Validation Loss: 0.3305, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 14:47:14,026 - INFO - Epoch 3, Global Batch 12125, Training Loss: 0.2756, Validation Loss: 0.4953, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 14:47:41,414 - INFO - Epoch 3, Global Batch 12150, Training Loss: 0.2465, Validation Loss: 0.3498, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 14:48:08,886 - INFO - Epoch 3, Global Batch 12175, Training Loss: 0.2364, Validation Loss: 0.3496, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 14:48:36,284 - INFO - Epoch 3, Global Batch 12200, Training Loss: 0.2509, Validation Loss: 0.3092, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 14:48:39,462 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:49:06,814 - INFO - Epoch 3, Global Batch 12225, Training Loss: 0.2932, Validation Loss: 0.2551, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:49:34,224 - INFO - Epoch 3, Global Batch 12250, Training Loss: 0.2349, Validation Loss: 0.2555, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:50:01,573 - INFO - Epoch 3, Global Batch 12275, Training Loss: 0.2864, Validation Loss: 0.3541, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:50:28,946 - INFO - Epoch 3, Global Batch 12300, Training Loss: 0.2387, Validation Loss: 0.2721, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 14:50:56,407 - INFO - Epoch 3, Global Batch 12325, Training Loss: 0.2589, Validation Loss: 0.2952, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:51:23,817 - INFO - Epoch 3, Global Batch 12350, Training Loss: 0.2443, Validation Loss: 0.3351, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:51:51,206 - INFO - Epoch 3, Global Batch 12375, Training Loss: 0.2226, Validation Loss: 0.4231, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:52:18,585 - INFO - Epoch 3, Global Batch 12400, Training Loss: 0.2522, Validation Loss: 0.5885, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:52:21,757 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:52:49,122 - INFO - Epoch 3, Global Batch 12425, Training Loss: 0.2474, Validation Loss: 0.2419, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:53:16,588 - INFO - Epoch 3, Global Batch 12450, Training Loss: 0.2252, Validation Loss: 0.3605, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 14:53:44,011 - INFO - Epoch 3, Global Batch 12475, Training Loss: 0.2192, Validation Loss: 0.1920, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:54:11,419 - INFO - Epoch 3, Global Batch 12500, Training Loss: 0.2762, Validation Loss: 0.2747, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:54:38,879 - INFO - Epoch 3, Global Batch 12525, Training Loss: 0.2393, Validation Loss: 0.3320, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:55:06,268 - INFO - Epoch 3, Global Batch 12550, Training Loss: 0.2333, Validation Loss: 0.4650, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:55:33,661 - INFO - Epoch 3, Global Batch 12575, Training Loss: 0.2475, Validation Loss: 0.4093, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:56:01,050 - INFO - Epoch 3, Global Batch 12600, Training Loss: 0.2351, Validation Loss: 0.3932, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:56:04,195 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 14:56:31,555 - INFO - Epoch 3, Global Batch 12625, Training Loss: 0.2444, Validation Loss: 0.3254, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:56:58,956 - INFO - Epoch 3, Global Batch 12650, Training Loss: 0.2501, Validation Loss: 0.5031, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:57:26,671 - INFO - Epoch 3, Global Batch 12675, Training Loss: 0.2597, Validation Loss: 0.3595, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:57:54,089 - INFO - Epoch 3, Global Batch 12700, Training Loss: 0.2403, Validation Loss: 0.3998, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:58:21,453 - INFO - Epoch 3, Global Batch 12725, Training Loss: 0.2534, Validation Loss: 0.3392, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:58:48,842 - INFO - Epoch 3, Global Batch 12750, Training Loss: 0.2655, Validation Loss: 0.3183, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:59:16,265 - INFO - Epoch 3, Global Batch 12775, Training Loss: 0.2420, Validation Loss: 0.3146, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 14:59:43,657 - INFO - Epoch 3, Global Batch 12800, Training Loss: 0.2096, Validation Loss: 0.4634, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 14:59:46,819 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 15:00:14,244 - INFO - Epoch 3, Global Batch 12825, Training Loss: 0.2669, Validation Loss: 0.3731, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 15:00:41,685 - INFO - Epoch 3, Global Batch 12850, Training Loss: 0.2377, Validation Loss: 0.3325, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 15:01:09,082 - INFO - Epoch 3, Global Batch 12875, Training Loss: 0.2613, Validation Loss: 0.3468, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 15:01:36,503 - INFO - Epoch 3, Global Batch 12900, Training Loss: 0.2562, Validation Loss: 0.4086, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 15:02:04,510 - INFO - Epoch 3, Global Batch 12925, Training Loss: 0.2442, Validation Loss: 0.2833, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 15:02:32,384 - INFO - Epoch 3, Global Batch 12950, Training Loss: 0.2230, Validation Loss: 0.2414, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 15:03:00,218 - INFO - Epoch 3, Global Batch 12975, Training Loss: 0.2325, Validation Loss: 0.4249, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 15:03:27,936 - INFO - Epoch 3, Global Batch 13000, Training Loss: 0.2398, Validation Loss: 0.3077, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 15:03:31,171 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 15:03:58,895 - INFO - Epoch 3, Global Batch 13025, Training Loss: 0.2343, Validation Loss: 0.3983, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 15:04:26,612 - INFO - Epoch 3, Global Batch 13050, Training Loss: 0.2698, Validation Loss: 0.2682, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 15:04:54,238 - INFO - Epoch 3, Global Batch 13075, Training Loss: 0.2404, Validation Loss: 0.2572, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 15:05:21,917 - INFO - Epoch 3, Global Batch 13100, Training Loss: 0.2474, Validation Loss: 0.4513, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 15:05:49,501 - INFO - Epoch 3, Global Batch 13125, Training Loss: 0.2495, Validation Loss: 0.3030, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 15:06:17,419 - INFO - Epoch 3, Global Batch 13150, Training Loss: 0.2645, Validation Loss: 0.3638, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 15:06:44,749 - INFO - Epoch 3, Global Batch 13175, Training Loss: 0.2708, Validation Loss: 0.3034, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 15:07:12,388 - INFO - Epoch 3, Global Batch 13200, Training Loss: 0.2515, Validation Loss: 0.3585, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 15:07:15,569 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 15:07:43,144 - INFO - Epoch 3, Global Batch 13225, Training Loss: 0.2293, Validation Loss: 0.3232, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 15:08:10,816 - INFO - Epoch 3, Global Batch 13250, Training Loss: 0.2585, Validation Loss: 0.3523, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 15:08:38,543 - INFO - Epoch 3, Global Batch 13275, Training Loss: 0.2437, Validation Loss: 0.2841, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 15:09:06,475 - INFO - Epoch 3, Global Batch 13300, Training Loss: 0.2484, Validation Loss: 0.3527, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 15:09:34,407 - INFO - Epoch 3, Global Batch 13325, Training Loss: 0.2477, Validation Loss: 0.3819, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 15:10:02,374 - INFO - Epoch 3, Global Batch 13350, Training Loss: 0.2664, Validation Loss: 0.3564, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 15:10:30,267 - INFO - Epoch 3, Global Batch 13375, Training Loss: 0.2294, Validation Loss: 0.3112, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 15:10:57,689 - INFO - Epoch 3, Global Batch 13400, Training Loss: 0.2345, Validation Loss: 0.3518, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 15:11:00,871 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 15:11:28,695 - INFO - Epoch 3, Global Batch 13425, Training Loss: 0.2280, Validation Loss: 0.3442, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 15:11:56,528 - INFO - Epoch 3, Global Batch 13450, Training Loss: 0.2522, Validation Loss: 0.3045, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 15:12:25,364 - INFO - Epoch 3, Global Batch 13475, Training Loss: 0.2245, Validation Loss: 0.2786, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 15:12:53,443 - INFO - Epoch 3, Global Batch 13500, Training Loss: 0.2496, Validation Loss: 0.2693, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 15:13:21,962 - INFO - Epoch 3, Global Batch 13525, Training Loss: 0.2640, Validation Loss: 0.4487, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 16:08:32,542 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 16:09:47,964 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 16:11:54,372 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 16:12:08,350 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 17:03:08,193 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 17:03:08,279 - INFO - No checkpoint found. Starting from scratch.
+2024-11-03 17:03:55,104 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:04:42,423 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:05:50,144 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 17:05:51,403 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 17:05:51,404 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 17:06:37,744 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:07:26,834 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 17:07:28,123 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 17:07:28,123 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 17:08:14,465 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:09:13,044 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:11:40,833 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 17:14:47,765 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 17:16:02,467 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 17:16:03,744 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 17:16:03,744 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 17:16:41,519 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 17:16:42,742 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 17:16:42,742 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 17:17:29,312 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:18:27,000 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:19:18,710 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:27:47,214 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 17:27:48,455 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 17:27:48,455 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 17:31:31,653 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 17:31:32,889 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 17:31:32,889 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 17:32:40,855 - INFO - Epoch 1, Batch 2, Training Loss: 96.1550, Validation Loss: 3.0243
+2024-11-03 17:32:40,855 - INFO - Epoch 1, Batch 2, Validation Loss: 3.0243, Validation Accuracy: 0.0000
+2024-11-03 17:32:46,592 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:34:04,923 - INFO - Epoch 1, Batch 4, Training Loss: 314.2941, Validation Loss: 2.8717
+2024-11-03 17:34:04,923 - INFO - Epoch 1, Batch 4, Validation Loss: 2.8717, Validation Accuracy: 0.0000
+2024-11-03 17:34:14,478 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:35:32,115 - INFO - Epoch 1, Batch 6, Training Loss: 305.6679, Validation Loss: 2.8948
+2024-11-03 17:35:32,115 - INFO - Epoch 1, Batch 6, Validation Loss: 2.8948, Validation Accuracy: 0.0000
+2024-11-03 17:35:45,618 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:37:07,834 - INFO - Epoch 1, Batch 8, Training Loss: 263.0659, Validation Loss: 2.4515
+2024-11-03 17:37:07,834 - INFO - Epoch 1, Batch 8, Validation Loss: 2.4515, Validation Accuracy: 0.0000
+2024-11-03 17:37:10,953 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:38:30,423 - INFO - Epoch 1, Batch 10, Training Loss: 216.2572, Validation Loss: 2.8530
+2024-11-03 17:38:30,424 - INFO - Epoch 1, Batch 10, Validation Loss: 2.8530, Validation Accuracy: 0.0000
+2024-11-03 17:38:33,590 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:39:51,452 - INFO - Epoch 1, Batch 12, Training Loss: 194.1902, Validation Loss: 3.2685
+2024-11-03 17:39:51,452 - INFO - Epoch 1, Batch 12, Validation Loss: 3.2685, Validation Accuracy: 0.0000
+2024-11-03 17:40:03,483 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:41:21,290 - INFO - Epoch 1, Batch 14, Training Loss: 197.1245, Validation Loss: 2.6716
+2024-11-03 17:41:21,290 - INFO - Epoch 1, Batch 14, Validation Loss: 2.6716, Validation Accuracy: 0.0000
+2024-11-03 17:41:24,910 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:42:43,134 - INFO - Epoch 1, Batch 16, Training Loss: 78.0814, Validation Loss: 2.6264
+2024-11-03 17:42:43,134 - INFO - Epoch 1, Batch 16, Validation Loss: 2.6264, Validation Accuracy: 0.0000
+2024-11-03 17:42:46,249 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:44:05,610 - INFO - Epoch 1, Batch 18, Training Loss: 49.0685, Validation Loss: 1.8055
+2024-11-03 17:44:05,610 - INFO - Epoch 1, Batch 18, Validation Loss: 1.8055, Validation Accuracy: 0.0000
+2024-11-03 17:47:19,037 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 17:47:20,327 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 17:47:20,327 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 17:48:28,037 - INFO - Epoch 1, Batch 2, Training Loss: 52.3901, Validation Loss: 1.0552
+2024-11-03 17:48:28,037 - INFO - Epoch 1, Batch 2, Validation Loss: 1.0552, Validation Accuracy: 0.0000
+2024-11-03 17:48:52,739 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 17:48:54,021 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 17:48:54,021 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 17:50:08,446 - INFO - Epoch 1, Batch 2, Training Loss: 89.7252, Validation Loss: 0.7564, Validation Accuracy: 0.0000
+2024-11-03 17:50:14,752 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:51:34,320 - INFO - Epoch 1, Batch 4, Training Loss: 353.8544, Validation Loss: 1.9786, Validation Accuracy: 0.0000
+2024-11-03 17:51:37,460 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 17:53:00,483 - INFO - Epoch 1, Batch 6, Training Loss: 231.5916, Validation Loss: 1.5716, Validation Accuracy: 0.0000
+2024-11-03 18:04:44,404 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 18:04:45,708 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 18:04:45,708 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 18:05:58,049 - INFO - Epoch 1, Batch 2, Training Loss: 87.3216, Validation Loss: 0.3433, Validation Accuracy: 0.0000
+2024-11-03 18:06:01,178 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:07:22,936 - INFO - Epoch 1, Batch 4, Training Loss: 296.3207, Validation Loss: 0.3487, Validation Accuracy: 0.0000
+2024-11-03 18:07:34,122 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:08:52,723 - INFO - Epoch 1, Batch 6, Training Loss: 265.7297, Validation Loss: 0.3459, Validation Accuracy: 0.0000
+2024-11-03 18:09:03,901 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:10:24,439 - INFO - Epoch 1, Batch 8, Training Loss: 277.1389, Validation Loss: 0.3450, Validation Accuracy: 0.0000
+2024-11-03 18:10:28,580 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:11:46,188 - INFO - Epoch 1, Batch 10, Training Loss: 275.0023, Validation Loss: 0.3473, Validation Accuracy: 0.0000
+2024-11-03 18:11:49,384 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:13:07,057 - INFO - Epoch 1, Batch 12, Training Loss: 272.0713, Validation Loss: 0.3456, Validation Accuracy: 1.0000
+2024-11-03 18:13:20,841 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:14:39,878 - INFO - Epoch 1, Batch 14, Training Loss: 266.5172, Validation Loss: 0.3400, Validation Accuracy: 0.0000
+2024-11-03 18:14:52,120 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:16:10,555 - INFO - Epoch 1, Batch 16, Training Loss: 184.6152, Validation Loss: 0.3476, Validation Accuracy: 0.0000
+2024-11-03 18:16:17,137 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:17:35,927 - INFO - Epoch 1, Batch 18, Training Loss: 161.2568, Validation Loss: 0.3526, Validation Accuracy: 0.0000
+2024-11-03 18:17:43,829 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:19:02,473 - INFO - Epoch 1, Batch 20, Training Loss: 149.0058, Validation Loss: 0.3562, Validation Accuracy: 0.0000
+2024-11-03 18:19:07,842 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:20:26,464 - INFO - Epoch 1, Batch 22, Training Loss: 75.5511, Validation Loss: 0.3341, Validation Accuracy: 1.0000
+2024-11-03 18:20:36,931 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:21:55,198 - INFO - Epoch 1, Batch 24, Training Loss: 45.3897, Validation Loss: 0.5417, Validation Accuracy: 0.0000
+2024-11-03 18:22:05,700 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:23:24,147 - INFO - Epoch 1, Batch 26, Training Loss: 52.6983, Validation Loss: 1.5210, Validation Accuracy: 0.0000
+2024-11-03 18:23:33,095 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:24:52,706 - INFO - Epoch 1, Batch 28, Training Loss: 32.7102, Validation Loss: 2.4284, Validation Accuracy: 0.0000
+2024-11-03 18:24:57,926 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:26:18,794 - INFO - Epoch 1, Batch 30, Training Loss: 42.9439, Validation Loss: 2.9047, Validation Accuracy: 0.0000
+2024-11-03 18:26:22,699 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:27:45,295 - INFO - Epoch 1, Batch 32, Training Loss: 35.2591, Validation Loss: 3.1333, Validation Accuracy: 1.0000
+2024-11-03 18:27:59,220 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:29:23,478 - INFO - Epoch 1, Batch 34, Training Loss: nan, Validation Loss: 3.1181, Validation Accuracy: 0.0000
+2024-11-03 18:29:26,698 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:30:49,250 - INFO - Epoch 1, Batch 36, Training Loss: 37.2574, Validation Loss: 3.2079, Validation Accuracy: 1.0000
+2024-11-03 18:30:52,501 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:32:14,104 - INFO - Epoch 1, Batch 38, Training Loss: 34.8588, Validation Loss: 3.2340, Validation Accuracy: 0.0000
+2024-11-03 18:32:25,785 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:33:49,687 - INFO - Epoch 1, Batch 40, Training Loss: 26.3970, Validation Loss: 3.2005, Validation Accuracy: 0.0000
+2024-11-03 18:33:52,992 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:35:16,771 - INFO - Epoch 1, Batch 42, Training Loss: nan, Validation Loss: 3.1759, Validation Accuracy: 1.0000
+2024-11-03 18:35:25,693 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:36:46,372 - INFO - Epoch 1, Batch 44, Training Loss: 25.1593, Validation Loss: 3.1287, Validation Accuracy: 0.0000
+2024-11-03 18:37:00,185 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:38:22,360 - INFO - Epoch 1, Batch 46, Training Loss: nan, Validation Loss: 3.1550, Validation Accuracy: 0.0000
+2024-11-03 18:38:25,612 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:39:47,142 - INFO - Epoch 1, Batch 48, Training Loss: 21.5833, Validation Loss: 3.1066, Validation Accuracy: 0.0000
+2024-11-03 18:39:59,134 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:41:19,819 - INFO - Epoch 1, Batch 50, Training Loss: 28.3430, Validation Loss: 3.0414, Validation Accuracy: 0.0000
+2024-11-03 18:41:32,059 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:42:53,650 - INFO - Epoch 1, Batch 52, Training Loss: 25.2589, Validation Loss: 3.0422, Validation Accuracy: 0.0000
+2024-11-03 18:43:07,072 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:44:26,865 - INFO - Epoch 1, Batch 54, Training Loss: 13.7763, Validation Loss: 2.9901, Validation Accuracy: 0.0000
+2024-11-03 18:44:34,606 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:45:53,815 - INFO - Epoch 1, Batch 56, Training Loss: 17.9599, Validation Loss: 2.9103, Validation Accuracy: 0.0000
+2024-11-03 18:46:04,231 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:47:23,229 - INFO - Epoch 1, Batch 58, Training Loss: 18.5095, Validation Loss: 2.9118, Validation Accuracy: 1.0000
+2024-11-03 18:47:26,462 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:48:45,698 - INFO - Epoch 1, Batch 60, Training Loss: 22.1178, Validation Loss: 2.8735, Validation Accuracy: 0.0000
+2024-11-03 18:48:48,916 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:50:08,119 - INFO - Epoch 1, Batch 62, Training Loss: 21.1338, Validation Loss: 2.8428, Validation Accuracy: 1.0000
+2024-11-03 18:50:18,502 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:51:37,732 - INFO - Epoch 1, Batch 64, Training Loss: 20.6560, Validation Loss: 2.7856, Validation Accuracy: 1.0000
+2024-11-03 18:51:50,830 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:53:09,409 - INFO - Epoch 1, Batch 66, Training Loss: 21.4139, Validation Loss: 2.7682, Validation Accuracy: 0.0000
+2024-11-03 18:53:23,097 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:54:41,847 - INFO - Epoch 1, Batch 68, Training Loss: 21.5642, Validation Loss: 2.7521, Validation Accuracy: 0.0000
+2024-11-03 18:54:53,509 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:56:12,563 - INFO - Epoch 1, Batch 70, Training Loss: 18.9189, Validation Loss: 2.7003, Validation Accuracy: 1.0000
+2024-11-03 18:56:24,309 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:57:42,713 - INFO - Epoch 1, Batch 72, Training Loss: nan, Validation Loss: 2.6961, Validation Accuracy: 1.0000
+2024-11-03 18:57:52,359 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 18:59:11,998 - INFO - Epoch 1, Batch 74, Training Loss: 16.0789, Validation Loss: 2.6739, Validation Accuracy: 0.0000
+2024-11-03 18:59:24,746 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:00:43,434 - INFO - Epoch 1, Batch 76, Training Loss: 20.5714, Validation Loss: 2.6355, Validation Accuracy: 0.0000
+2024-11-03 19:00:46,663 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:02:05,730 - INFO - Epoch 1, Batch 78, Training Loss: 26.8749, Validation Loss: 2.6138, Validation Accuracy: 0.0000
+2024-11-03 19:02:15,302 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:03:36,623 - INFO - Epoch 1, Batch 80, Training Loss: 16.7484, Validation Loss: 2.6134, Validation Accuracy: 1.0000
+2024-11-03 19:03:42,961 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:05:06,180 - INFO - Epoch 1, Batch 82, Training Loss: 21.8266, Validation Loss: 2.5943, Validation Accuracy: 0.0000
+2024-11-03 19:05:15,025 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:06:33,605 - INFO - Epoch 1, Batch 84, Training Loss: 16.0780, Validation Loss: 2.5581, Validation Accuracy: 0.0000
+2024-11-03 19:06:36,819 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:07:55,922 - INFO - Epoch 1, Batch 86, Training Loss: nan, Validation Loss: 2.5233, Validation Accuracy: 0.0000
+2024-11-03 19:08:03,567 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:09:24,118 - INFO - Epoch 1, Batch 88, Training Loss: 13.2397, Validation Loss: 2.4995, Validation Accuracy: 0.0000
+2024-11-03 19:09:36,839 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:10:58,223 - INFO - Epoch 1, Batch 90, Training Loss: 14.3755, Validation Loss: 2.4662, Validation Accuracy: 1.0000
+2024-11-03 19:11:04,009 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:12:25,880 - INFO - Epoch 1, Batch 92, Training Loss: 25.8592, Validation Loss: 2.4617, Validation Accuracy: 0.0000
+2024-11-03 19:12:38,347 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:13:59,447 - INFO - Epoch 1, Batch 94, Training Loss: 21.6168, Validation Loss: 2.4151, Validation Accuracy: 0.0000
+2024-11-03 19:14:02,666 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:15:23,534 - INFO - Epoch 1, Batch 96, Training Loss: 18.7492, Validation Loss: 2.3803, Validation Accuracy: 1.0000
+2024-11-03 19:15:35,750 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:16:56,597 - INFO - Epoch 1, Batch 98, Training Loss: 15.1598, Validation Loss: 2.3443, Validation Accuracy: 0.0000
+2024-11-03 19:17:09,735 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:18:32,087 - INFO - Epoch 1, Batch 100, Training Loss: 22.8815, Validation Loss: 2.3473, Validation Accuracy: 0.0000
+2024-11-03 19:18:45,582 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:20:07,951 - INFO - Epoch 1, Batch 102, Training Loss: 17.7075, Validation Loss: 2.2968, Validation Accuracy: 0.0000
+2024-11-03 19:20:15,281 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:21:37,483 - INFO - Epoch 1, Batch 104, Training Loss: 17.8719, Validation Loss: 2.2262, Validation Accuracy: 0.0000
+2024-11-03 19:21:46,518 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:23:08,460 - INFO - Epoch 1, Batch 106, Training Loss: 11.1315, Validation Loss: 2.2160, Validation Accuracy: 1.0000
+2024-11-03 19:23:19,571 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:24:41,334 - INFO - Epoch 1, Batch 108, Training Loss: 18.3090, Validation Loss: 2.1806, Validation Accuracy: 1.0000
+2024-11-03 19:24:51,762 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:26:12,696 - INFO - Epoch 1, Batch 110, Training Loss: 12.6631, Validation Loss: 2.1195, Validation Accuracy: 0.0000
+2024-11-03 19:26:26,418 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:27:47,136 - INFO - Epoch 1, Batch 112, Training Loss: 14.9894, Validation Loss: 2.1422, Validation Accuracy: 0.0000
+2024-11-03 19:27:50,753 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:29:11,853 - INFO - Epoch 1, Batch 114, Training Loss: 19.6508, Validation Loss: 2.1005, Validation Accuracy: 0.0000
+2024-11-03 19:29:15,093 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:30:36,756 - INFO - Epoch 1, Batch 116, Training Loss: 22.1852, Validation Loss: 2.0986, Validation Accuracy: 0.0000
+2024-11-03 19:30:47,416 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:32:11,079 - INFO - Epoch 1, Batch 118, Training Loss: 17.0682, Validation Loss: 2.0771, Validation Accuracy: 1.0000
+2024-11-03 19:32:20,961 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:33:44,045 - INFO - Epoch 1, Batch 120, Training Loss: 19.2019, Validation Loss: 2.0238, Validation Accuracy: 1.0000
+2024-11-03 19:33:55,957 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:35:17,426 - INFO - Epoch 1, Batch 122, Training Loss: nan, Validation Loss: 1.9883, Validation Accuracy: 0.0000
+2024-11-03 19:35:29,003 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:36:51,208 - INFO - Epoch 1, Batch 124, Training Loss: 21.5259, Validation Loss: 1.9484, Validation Accuracy: 0.0000
+2024-11-03 19:36:54,426 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:38:17,174 - INFO - Epoch 1, Batch 126, Training Loss: nan, Validation Loss: 1.9491, Validation Accuracy: 0.0000
+2024-11-03 19:38:21,962 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:39:45,494 - INFO - Epoch 1, Batch 128, Training Loss: 11.2000, Validation Loss: 1.9127, Validation Accuracy: 0.0000
+2024-11-03 19:39:48,740 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:41:13,231 - INFO - Epoch 1, Batch 130, Training Loss: 21.8117, Validation Loss: 1.8831, Validation Accuracy: 0.0000
+2024-11-03 19:41:19,432 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:42:41,561 - INFO - Epoch 1, Batch 132, Training Loss: 9.8011, Validation Loss: 1.8476, Validation Accuracy: 0.0000
+2024-11-03 19:42:48,943 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:44:10,683 - INFO - Epoch 1, Batch 134, Training Loss: 14.2107, Validation Loss: 1.7995, Validation Accuracy: 0.0000
+2024-11-03 19:44:15,522 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:45:35,891 - INFO - Epoch 1, Batch 136, Training Loss: 26.8704, Validation Loss: 1.7464, Validation Accuracy: 0.0000
+2024-11-03 19:45:40,103 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:47:00,797 - INFO - Epoch 1, Batch 138, Training Loss: 11.5169, Validation Loss: 1.7465, Validation Accuracy: 0.0000
+2024-11-03 19:47:04,001 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:48:24,091 - INFO - Epoch 1, Batch 140, Training Loss: 12.9010, Validation Loss: 1.7170, Validation Accuracy: 0.0000
+2024-11-03 19:48:35,522 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:49:55,995 - INFO - Epoch 1, Batch 142, Training Loss: 14.2388, Validation Loss: 1.6444, Validation Accuracy: 0.0000
+2024-11-03 19:49:59,215 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:51:19,118 - INFO - Epoch 1, Batch 144, Training Loss: 25.2390, Validation Loss: 1.6558, Validation Accuracy: 0.0000
+2024-11-03 19:51:27,760 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:52:47,573 - INFO - Epoch 1, Batch 146, Training Loss: 17.7628, Validation Loss: 1.6715, Validation Accuracy: 0.0000
+2024-11-03 19:52:54,998 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:54:15,640 - INFO - Epoch 1, Batch 148, Training Loss: 15.5875, Validation Loss: 1.5920, Validation Accuracy: 0.0000
+2024-11-03 19:54:18,909 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:55:39,528 - INFO - Epoch 1, Batch 150, Training Loss: 19.2148, Validation Loss: 1.6199, Validation Accuracy: 0.0000
+2024-11-03 19:55:51,089 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:57:14,747 - INFO - Epoch 1, Batch 152, Training Loss: 18.0538, Validation Loss: 1.6006, Validation Accuracy: 1.0000
+2024-11-03 19:57:26,014 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 19:58:51,874 - INFO - Epoch 1, Batch 154, Training Loss: nan, Validation Loss: 1.6175, Validation Accuracy: 0.0000
+2024-11-03 19:58:55,163 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:00:22,503 - INFO - Epoch 1, Batch 156, Training Loss: 10.7510, Validation Loss: 1.5996, Validation Accuracy: 0.0000
+2024-11-03 20:00:33,058 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:01:55,415 - INFO - Epoch 1, Batch 158, Training Loss: 24.5327, Validation Loss: 1.6010, Validation Accuracy: 0.0000
+2024-11-03 20:02:07,844 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:03:28,492 - INFO - Epoch 1, Batch 160, Training Loss: 21.7286, Validation Loss: 1.5896, Validation Accuracy: 0.0000
+2024-11-03 20:03:41,407 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:05:03,056 - INFO - Epoch 1, Batch 162, Training Loss: 24.0585, Validation Loss: 1.6017, Validation Accuracy: 0.0000
+2024-11-03 20:05:11,440 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:06:34,490 - INFO - Epoch 1, Batch 164, Training Loss: 13.2853, Validation Loss: 1.6091, Validation Accuracy: 0.0000
+2024-11-03 20:06:37,702 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:08:00,677 - INFO - Epoch 1, Batch 166, Training Loss: 26.3040, Validation Loss: 1.5647, Validation Accuracy: 0.0000
+2024-11-03 20:08:03,903 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:09:25,068 - INFO - Epoch 1, Batch 168, Training Loss: 28.3063, Validation Loss: 1.5333, Validation Accuracy: 0.0000
+2024-11-03 20:09:37,046 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:10:58,275 - INFO - Epoch 1, Batch 170, Training Loss: 15.4141, Validation Loss: 1.5095, Validation Accuracy: 1.0000
+2024-11-03 20:11:01,537 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:12:22,099 - INFO - Epoch 1, Batch 172, Training Loss: 15.6082, Validation Loss: 1.4752, Validation Accuracy: 0.0000
+2024-11-03 20:12:35,322 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:13:56,752 - INFO - Epoch 1, Batch 174, Training Loss: 15.5347, Validation Loss: 1.4770, Validation Accuracy: 0.0000
+2024-11-03 20:14:06,329 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:15:27,774 - INFO - Epoch 1, Batch 176, Training Loss: 18.2647, Validation Loss: 1.4910, Validation Accuracy: 0.0000
+2024-11-03 20:15:38,716 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:17:02,116 - INFO - Epoch 1, Batch 178, Training Loss: 20.6814, Validation Loss: 1.4431, Validation Accuracy: 0.0000
+2024-11-03 20:17:14,174 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:18:35,888 - INFO - Epoch 1, Batch 180, Training Loss: 19.0799, Validation Loss: 1.4620, Validation Accuracy: 0.0000
+2024-11-03 20:18:42,754 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:20:04,156 - INFO - Epoch 1, Batch 182, Training Loss: 28.4704, Validation Loss: 1.3881, Validation Accuracy: 1.0000
+2024-11-03 20:20:07,396 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:21:28,589 - INFO - Epoch 1, Batch 184, Training Loss: 10.5325, Validation Loss: 1.4309, Validation Accuracy: 0.0000
+2024-11-03 20:21:40,988 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:23:02,525 - INFO - Epoch 1, Batch 186, Training Loss: 14.8476, Validation Loss: 1.3634, Validation Accuracy: 0.0000
+2024-11-03 20:23:14,448 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:24:36,111 - INFO - Epoch 1, Batch 188, Training Loss: 23.2021, Validation Loss: 1.3136, Validation Accuracy: 0.0000
+2024-11-03 20:24:43,274 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:26:05,219 - INFO - Epoch 1, Batch 190, Training Loss: 19.5968, Validation Loss: 1.3384, Validation Accuracy: 0.0000
+2024-11-03 20:26:12,626 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:27:23,895 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 20:27:25,292 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 20:27:25,292 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 20:28:35,371 - INFO - Epoch 1, Batch 2, Training Loss: 94.9061, Validation Loss: 1.3529, Validation Accuracy: 0.0000
+2024-11-03 20:28:38,613 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:29:59,791 - INFO - Epoch 1, Batch 4, Training Loss: 16.1575, Validation Loss: 1.3414, Validation Accuracy: 1.0000
+2024-11-03 20:30:08,589 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:31:29,173 - INFO - Epoch 1, Batch 6, Training Loss: 17.6522, Validation Loss: 1.3176, Validation Accuracy: 0.0000
+2024-11-03 20:31:32,429 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:32:53,966 - INFO - Epoch 1, Batch 8, Training Loss: 16.3452, Validation Loss: 1.2939, Validation Accuracy: 0.0000
+2024-11-03 20:33:05,844 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:34:26,394 - INFO - Epoch 1, Batch 10, Training Loss: 18.7638, Validation Loss: 1.1832, Validation Accuracy: 0.0000
+2024-11-03 20:34:29,626 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:35:50,814 - INFO - Epoch 1, Batch 12, Training Loss: 24.3896, Validation Loss: 1.2307, Validation Accuracy: 0.0000
+2024-11-03 20:35:54,043 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:37:14,657 - INFO - Epoch 1, Batch 14, Training Loss: 24.1674, Validation Loss: 1.1827, Validation Accuracy: 0.0000
+2024-11-03 20:37:17,923 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:38:38,950 - INFO - Epoch 1, Batch 16, Training Loss: 15.2750, Validation Loss: 1.1575, Validation Accuracy: 1.0000
+2024-11-03 20:38:49,317 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:40:10,475 - INFO - Epoch 1, Batch 18, Training Loss: 9.0478, Validation Loss: 1.1070, Validation Accuracy: 0.0000
+2024-11-03 20:40:15,044 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:41:35,159 - INFO - Epoch 1, Batch 20, Training Loss: 9.4543, Validation Loss: 1.0522, Validation Accuracy: 0.0000
+2024-11-03 20:41:38,410 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:43:00,291 - INFO - Epoch 1, Batch 22, Training Loss: 15.8798, Validation Loss: 1.0483, Validation Accuracy: 0.0000
+2024-11-03 20:43:05,958 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:44:28,719 - INFO - Epoch 1, Batch 24, Training Loss: 23.7813, Validation Loss: 1.0096, Validation Accuracy: 0.0000
+2024-11-03 20:44:31,944 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:45:53,181 - INFO - Epoch 1, Batch 26, Training Loss: 17.3453, Validation Loss: 0.9905, Validation Accuracy: 0.0000
+2024-11-03 20:46:06,445 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:47:27,604 - INFO - Epoch 1, Batch 28, Training Loss: 13.2686, Validation Loss: 0.9882, Validation Accuracy: 1.0000
+2024-11-03 20:47:36,000 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:48:56,235 - INFO - Epoch 1, Batch 30, Training Loss: 16.1987, Validation Loss: 0.9668, Validation Accuracy: 0.0000
+2024-11-03 20:49:10,582 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:50:34,009 - INFO - Epoch 1, Batch 32, Training Loss: 19.1203, Validation Loss: 0.9316, Validation Accuracy: 0.0000
+2024-11-03 20:50:43,589 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:52:03,574 - INFO - Epoch 1, Batch 34, Training Loss: 21.6860, Validation Loss: 0.9562, Validation Accuracy: 0.0000
+2024-11-03 20:52:12,903 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:53:33,192 - INFO - Epoch 1, Batch 36, Training Loss: 13.0667, Validation Loss: 0.9287, Validation Accuracy: 0.0000
+2024-11-03 20:53:46,746 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:55:08,561 - INFO - Epoch 1, Batch 38, Training Loss: 17.1613, Validation Loss: 0.9238, Validation Accuracy: 0.0000
+2024-11-03 20:55:13,832 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:56:35,094 - INFO - Epoch 1, Batch 40, Training Loss: 15.0127, Validation Loss: 0.9055, Validation Accuracy: 0.0000
+2024-11-03 20:56:46,151 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:58:06,741 - INFO - Epoch 1, Batch 42, Training Loss: 19.1113, Validation Loss: 0.9103, Validation Accuracy: 0.0000
+2024-11-03 20:58:20,258 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 20:59:40,976 - INFO - Epoch 1, Batch 44, Training Loss: 18.5668, Validation Loss: 0.9086, Validation Accuracy: 0.0000
+2024-11-03 20:59:51,819 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:01:12,378 - INFO - Epoch 1, Batch 46, Training Loss: 11.4215, Validation Loss: 0.9173, Validation Accuracy: 0.0000
+2024-11-03 21:01:20,008 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:02:41,772 - INFO - Epoch 1, Batch 48, Training Loss: 22.4905, Validation Loss: 0.9293, Validation Accuracy: 0.0000
+2024-11-03 21:02:48,709 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:04:10,675 - INFO - Epoch 1, Batch 50, Training Loss: nan, Validation Loss: 0.8867, Validation Accuracy: 0.0000
+2024-11-03 21:04:16,885 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:05:37,434 - INFO - Epoch 1, Batch 52, Training Loss: 18.4829, Validation Loss: 0.9004, Validation Accuracy: 0.0000
+2024-11-03 21:05:45,737 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:07:05,446 - INFO - Epoch 1, Batch 54, Training Loss: 14.3336, Validation Loss: 0.9200, Validation Accuracy: 1.0000
+2024-11-03 21:07:08,677 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:08:28,749 - INFO - Epoch 1, Batch 56, Training Loss: 13.7806, Validation Loss: 0.8908, Validation Accuracy: 1.0000
+2024-11-03 21:08:41,971 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:10:02,776 - INFO - Epoch 1, Batch 58, Training Loss: 14.1509, Validation Loss: 0.8452, Validation Accuracy: 0.0000
+2024-11-03 21:10:16,574 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:11:38,595 - INFO - Epoch 1, Batch 60, Training Loss: 14.7488, Validation Loss: 0.8965, Validation Accuracy: 0.0000
+2024-11-03 21:11:51,846 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:13:15,003 - INFO - Epoch 1, Batch 62, Training Loss: 15.5943, Validation Loss: 0.8571, Validation Accuracy: 0.0000
+2024-11-03 21:13:24,659 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:14:45,689 - INFO - Epoch 1, Batch 64, Training Loss: 15.1797, Validation Loss: 0.8658, Validation Accuracy: 0.0000
+2024-11-03 21:14:59,437 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:16:20,508 - INFO - Epoch 1, Batch 66, Training Loss: 13.7354, Validation Loss: 0.8890, Validation Accuracy: 1.0000
+2024-11-03 21:16:29,000 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:17:49,537 - INFO - Epoch 1, Batch 68, Training Loss: 21.8700, Validation Loss: 0.8867, Validation Accuracy: 0.0000
+2024-11-03 21:17:52,762 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:19:14,312 - INFO - Epoch 1, Batch 70, Training Loss: 22.7852, Validation Loss: 0.8773, Validation Accuracy: 0.0000
+2024-11-03 21:19:26,882 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:20:48,821 - INFO - Epoch 1, Batch 72, Training Loss: 16.0953, Validation Loss: 0.9251, Validation Accuracy: 0.0000
+2024-11-03 21:20:57,878 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:22:20,284 - INFO - Epoch 1, Batch 74, Training Loss: 15.5710, Validation Loss: 0.9077, Validation Accuracy: 0.0000
+2024-11-03 21:22:33,015 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:23:55,161 - INFO - Epoch 1, Batch 76, Training Loss: 17.0784, Validation Loss: 0.8719, Validation Accuracy: 1.0000
+2024-11-03 21:24:00,611 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:25:21,437 - INFO - Epoch 1, Batch 78, Training Loss: 18.3434, Validation Loss: 0.8498, Validation Accuracy: 0.0000
+2024-11-03 21:25:24,698 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:26:45,748 - INFO - Epoch 1, Batch 80, Training Loss: 17.6041, Validation Loss: 0.9413, Validation Accuracy: 1.0000
+2024-11-03 21:26:58,339 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:28:19,763 - INFO - Epoch 1, Batch 82, Training Loss: 10.8422, Validation Loss: 0.8966, Validation Accuracy: 1.0000
+2024-11-03 21:28:32,837 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:29:54,639 - INFO - Epoch 1, Batch 84, Training Loss: nan, Validation Loss: 0.8956, Validation Accuracy: 0.0000
+2024-11-03 21:30:08,352 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:31:29,278 - INFO - Epoch 1, Batch 86, Training Loss: 29.1043, Validation Loss: 0.8441, Validation Accuracy: 1.0000
+2024-11-03 21:31:40,232 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:33:00,727 - INFO - Epoch 1, Batch 88, Training Loss: 9.1993, Validation Loss: 0.8451, Validation Accuracy: 0.0000
+2024-11-03 21:33:05,274 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:34:26,068 - INFO - Epoch 1, Batch 90, Training Loss: 18.3148, Validation Loss: 0.8523, Validation Accuracy: 0.0000
+2024-11-03 21:34:35,313 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:35:55,501 - INFO - Epoch 1, Batch 92, Training Loss: nan, Validation Loss: 0.8793, Validation Accuracy: 0.0000
+2024-11-03 21:35:58,759 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:37:19,810 - INFO - Epoch 1, Batch 94, Training Loss: 9.2244, Validation Loss: 0.8535, Validation Accuracy: 0.0000
+2024-11-03 21:37:28,528 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:38:51,013 - INFO - Epoch 1, Batch 96, Training Loss: 13.1531, Validation Loss: 0.8047, Validation Accuracy: 0.0000
+2024-11-03 21:39:02,997 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:40:25,819 - INFO - Epoch 1, Batch 98, Training Loss: 23.0537, Validation Loss: 0.7986, Validation Accuracy: 1.0000
+2024-11-03 21:40:38,144 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:41:59,318 - INFO - Epoch 1, Batch 100, Training Loss: nan, Validation Loss: 0.7658, Validation Accuracy: 0.0000
+2024-11-03 21:42:12,453 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:43:33,866 - INFO - Epoch 1, Batch 102, Training Loss: 12.3211, Validation Loss: 0.8225, Validation Accuracy: 0.0000
+2024-11-03 21:43:44,955 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:45:06,186 - INFO - Epoch 1, Batch 104, Training Loss: 15.0699, Validation Loss: 0.8127, Validation Accuracy: 0.0000
+2024-11-03 21:45:11,901 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:46:33,565 - INFO - Epoch 1, Batch 106, Training Loss: 18.9551, Validation Loss: 0.8233, Validation Accuracy: 0.0000
+2024-11-03 21:46:37,846 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:47:55,177 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 21:47:55,422 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 21:47:57,674 - INFO - Epoch 1 completed. Average Training Loss: 0.0000
+2024-11-03 21:48:00,790 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_1.pth
+2024-11-03 21:48:15,943 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:48:25,160 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:48:37,797 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 21:49:08,666 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 21:49:08,909 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 21:49:11,289 - INFO - Epoch 2 completed. Average Training Loss: 0.0000
+2024-11-03 21:49:24,524 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_2.pth
+2024-11-03 21:49:41,864 - INFO - Epoch 3, Global Batch 13725, Training Loss: 0.7280, Validation Loss: 0.8820, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 1.0000
+2024-11-03 21:50:08,929 - INFO - Epoch 3, Global Batch 13750, Training Loss: 1.0634, Validation Loss: 0.8936, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5000
+2024-11-03 21:50:46,267 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 21:50:46,509 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 21:50:48,754 - INFO - Epoch 2 completed. Average Training Loss: 0.0000
+2024-11-03 21:50:52,570 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_2.pth
+2024-11-03 21:51:12,933 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 21:51:13,176 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 21:51:15,412 - INFO - Epoch 2 completed. Average Training Loss: 0.0000
+2024-11-03 21:51:18,529 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_2.pth
+2024-11-03 21:51:36,368 - INFO - Epoch 3, Global Batch 13725, Training Loss: 0.9303, Validation Loss: 0.9423, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.0000
+2024-11-03 21:51:53,501 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 21:51:53,736 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 21:51:55,453 - INFO - Epoch 2 completed. Average Training Loss: 0.0000
+2024-11-03 21:52:02,956 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_2.pth
+2024-11-03 21:52:11,509 - INFO - Epoch 3, Global Batch 13712, Training Loss: 0.8357, Validation Loss: 0.8233, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 1.0000
+2024-11-03 21:52:19,414 - INFO - Epoch 3, Global Batch 13714, Training Loss: 0.9826, Validation Loss: 0.8982, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5000
+2024-11-03 21:52:27,252 - INFO - Epoch 3, Global Batch 13716, Training Loss: 1.1249, Validation Loss: 0.9702, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6667
+2024-11-03 21:52:36,436 - INFO - Epoch 3, Global Batch 13718, Training Loss: 0.8465, Validation Loss: 0.9150, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5000
+2024-11-03 21:52:44,217 - INFO - Epoch 3, Global Batch 13720, Training Loss: 0.8435, Validation Loss: 0.8537, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 21:52:52,181 - INFO - Epoch 3, Global Batch 13722, Training Loss: 0.6531, Validation Loss: 0.8374, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6667
+2024-11-03 21:53:00,026 - INFO - Epoch 3, Global Batch 13724, Training Loss: 0.9391, Validation Loss: 0.9075, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5714
+2024-11-03 21:53:07,832 - INFO - Epoch 3, Global Batch 13726, Training Loss: 0.7581, Validation Loss: 0.8822, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6250
+2024-11-03 21:53:15,696 - INFO - Epoch 3, Global Batch 13728, Training Loss: 0.6832, Validation Loss: 0.8909, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5556
+2024-11-03 21:53:23,441 - INFO - Epoch 3, Global Batch 13730, Training Loss: 0.8768, Validation Loss: 0.8336, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 21:53:31,376 - INFO - Epoch 3, Global Batch 13732, Training Loss: 0.9690, Validation Loss: 0.8482, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6364
+2024-11-03 21:53:39,235 - INFO - Epoch 3, Global Batch 13734, Training Loss: 0.9992, Validation Loss: 0.8063, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6667
+2024-11-03 21:53:47,071 - INFO - Epoch 3, Global Batch 13736, Training Loss: 0.9394, Validation Loss: 0.9670, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6923
+2024-11-03 21:53:54,970 - INFO - Epoch 3, Global Batch 13738, Training Loss: 1.0171, Validation Loss: 0.8839, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.7143
+2024-11-03 21:54:02,878 - INFO - Epoch 3, Global Batch 13740, Training Loss: 1.0763, Validation Loss: 0.8625, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6667
+2024-11-03 21:54:10,791 - INFO - Epoch 3, Global Batch 13742, Training Loss: 0.9248, Validation Loss: 0.8278, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6250
+2024-11-03 21:54:19,996 - INFO - Epoch 3, Global Batch 13744, Training Loss: 0.9577, Validation Loss: 0.9578, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6471
+2024-11-03 21:54:27,893 - INFO - Epoch 3, Global Batch 13746, Training Loss: 0.8721, Validation Loss: 0.8860, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6667
+2024-11-03 21:54:35,953 - INFO - Epoch 3, Global Batch 13748, Training Loss: 0.7909, Validation Loss: 0.8530, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6316
+2024-11-03 21:54:43,869 - INFO - Epoch 3, Global Batch 13750, Training Loss: 0.7560, Validation Loss: 0.9039, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 21:54:51,715 - INFO - Epoch 3, Global Batch 13752, Training Loss: 0.9452, Validation Loss: 0.8439, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6190
+2024-11-03 21:54:59,611 - INFO - Epoch 3, Global Batch 13754, Training Loss: 0.9347, Validation Loss: 0.8675, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6364
+2024-11-03 21:55:07,495 - INFO - Epoch 3, Global Batch 13756, Training Loss: 0.8072, Validation Loss: 0.8750, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6522
+2024-11-03 21:55:15,391 - INFO - Epoch 3, Global Batch 13758, Training Loss: 1.0693, Validation Loss: 0.9210, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6667
+2024-11-03 21:55:23,347 - INFO - Epoch 3, Global Batch 13760, Training Loss: 0.9203, Validation Loss: 0.8872, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6400
+2024-11-03 21:55:31,212 - INFO - Epoch 3, Global Batch 13762, Training Loss: 0.8901, Validation Loss: 0.9612, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 21:55:39,134 - INFO - Epoch 3, Global Batch 13764, Training Loss: 0.8586, Validation Loss: 0.9225, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 21:55:46,975 - INFO - Epoch 3, Global Batch 13766, Training Loss: 0.7777, Validation Loss: 0.8663, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 21:55:54,966 - INFO - Epoch 3, Global Batch 13768, Training Loss: 0.8884, Validation Loss: 0.9267, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 21:56:02,889 - INFO - Epoch 3, Global Batch 13770, Training Loss: 0.7931, Validation Loss: 0.8250, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 21:56:10,792 - INFO - Epoch 3, Global Batch 13772, Training Loss: 0.9628, Validation Loss: 0.9005, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 21:56:18,774 - INFO - Epoch 3, Global Batch 13774, Training Loss: 0.7714, Validation Loss: 0.8685, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 21:56:28,261 - INFO - Epoch 3, Global Batch 13776, Training Loss: 1.0098, Validation Loss: 0.8966, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 21:56:36,271 - INFO - Epoch 3, Global Batch 13778, Training Loss: 0.8780, Validation Loss: 0.9335, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 21:56:44,367 - INFO - Epoch 3, Global Batch 13780, Training Loss: 0.9084, Validation Loss: 0.9205, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 21:56:52,317 - INFO - Epoch 3, Global Batch 13782, Training Loss: 0.8507, Validation Loss: 0.8547, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 21:57:00,367 - INFO - Epoch 3, Global Batch 13784, Training Loss: 0.7330, Validation Loss: 0.9545, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 21:57:08,370 - INFO - Epoch 3, Global Batch 13786, Training Loss: 0.9556, Validation Loss: 0.8906, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 21:57:16,399 - INFO - Epoch 3, Global Batch 13788, Training Loss: 0.7331, Validation Loss: 0.9299, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 21:57:24,345 - INFO - Epoch 3, Global Batch 13790, Training Loss: 1.0163, Validation Loss: 0.9313, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 21:57:32,427 - INFO - Epoch 3, Global Batch 13792, Training Loss: 0.6298, Validation Loss: 0.9019, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 21:57:40,473 - INFO - Epoch 3, Global Batch 13794, Training Loss: 0.9643, Validation Loss: 0.8100, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 21:57:48,539 - INFO - Epoch 3, Global Batch 13796, Training Loss: 1.1329, Validation Loss: 0.8593, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 21:57:56,546 - INFO - Epoch 3, Global Batch 13798, Training Loss: 0.8668, Validation Loss: 0.8531, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 21:58:04,451 - INFO - Epoch 3, Global Batch 13800, Training Loss: 0.9580, Validation Loss: 0.8856, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 21:58:12,398 - INFO - Epoch 3, Global Batch 13802, Training Loss: 0.9638, Validation Loss: 0.9222, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 21:58:20,427 - INFO - Epoch 3, Global Batch 13804, Training Loss: 0.8552, Validation Loss: 0.8562, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 21:58:28,524 - INFO - Epoch 3, Global Batch 13806, Training Loss: 0.8054, Validation Loss: 0.9361, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 21:58:38,154 - INFO - Epoch 3, Global Batch 13808, Training Loss: 1.1780, Validation Loss: 0.9795, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 21:58:46,249 - INFO - Epoch 3, Global Batch 13810, Training Loss: 0.8568, Validation Loss: 0.9204, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 21:58:54,324 - INFO - Epoch 3, Global Batch 13812, Training Loss: 0.9643, Validation Loss: 0.9090, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 21:59:02,388 - INFO - Epoch 3, Global Batch 13814, Training Loss: 0.8220, Validation Loss: 0.8390, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 21:59:10,441 - INFO - Epoch 3, Global Batch 13816, Training Loss: 1.0979, Validation Loss: 0.8818, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 21:59:18,418 - INFO - Epoch 3, Global Batch 13818, Training Loss: 0.8541, Validation Loss: 0.9176, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 21:59:26,512 - INFO - Epoch 3, Global Batch 13820, Training Loss: 0.8555, Validation Loss: 0.8777, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 21:59:34,575 - INFO - Epoch 3, Global Batch 13822, Training Loss: 0.6887, Validation Loss: 0.8897, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 21:59:42,535 - INFO - Epoch 3, Global Batch 13824, Training Loss: 1.0368, Validation Loss: 0.8702, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 21:59:50,610 - INFO - Epoch 3, Global Batch 13826, Training Loss: 0.8654, Validation Loss: 0.9061, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 21:59:59,617 - INFO - Epoch 3, Global Batch 13828, Training Loss: 0.9321, Validation Loss: 0.9293, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 22:00:07,485 - INFO - Epoch 3, Global Batch 13830, Training Loss: 0.8891, Validation Loss: 0.8842, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 22:00:15,529 - INFO - Epoch 3, Global Batch 13832, Training Loss: 0.8532, Validation Loss: 0.8110, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 22:00:23,465 - INFO - Epoch 3, Global Batch 13834, Training Loss: 0.8168, Validation Loss: 0.8107, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 22:00:31,378 - INFO - Epoch 3, Global Batch 13836, Training Loss: 0.8987, Validation Loss: 0.8443, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 22:00:39,374 - INFO - Epoch 3, Global Batch 13838, Training Loss: 0.9628, Validation Loss: 0.8585, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 22:00:47,427 - INFO - Epoch 3, Global Batch 13840, Training Loss: 1.0548, Validation Loss: 0.8647, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 22:00:55,361 - INFO - Epoch 3, Global Batch 13842, Training Loss: 0.8706, Validation Loss: 0.8742, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 22:01:03,473 - INFO - Epoch 3, Global Batch 13844, Training Loss: 0.7240, Validation Loss: 0.8719, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 22:01:11,305 - INFO - Epoch 3, Global Batch 13846, Training Loss: 1.0071, Validation Loss: 0.8756, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 22:01:19,296 - INFO - Epoch 3, Global Batch 13848, Training Loss: 1.0624, Validation Loss: 0.9349, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 22:01:27,265 - INFO - Epoch 3, Global Batch 13850, Training Loss: 0.5875, Validation Loss: 0.8146, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 22:01:35,503 - INFO - Epoch 3, Global Batch 13852, Training Loss: 0.7659, Validation Loss: 0.9094, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 22:01:43,454 - INFO - Epoch 3, Global Batch 13854, Training Loss: 0.9617, Validation Loss: 0.8813, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 22:01:51,598 - INFO - Epoch 3, Global Batch 13856, Training Loss: 0.9457, Validation Loss: 0.8123, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 22:01:59,524 - INFO - Epoch 3, Global Batch 13858, Training Loss: 1.0710, Validation Loss: 0.7997, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 22:02:07,425 - INFO - Epoch 3, Global Batch 13860, Training Loss: 0.8874, Validation Loss: 0.8302, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 22:02:15,350 - INFO - Epoch 3, Global Batch 13862, Training Loss: 0.8415, Validation Loss: 0.9274, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 22:02:23,313 - INFO - Epoch 3, Global Batch 13864, Training Loss: 0.7596, Validation Loss: 0.8364, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 22:02:31,258 - INFO - Epoch 3, Global Batch 13866, Training Loss: 0.7701, Validation Loss: 0.8733, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 22:02:39,192 - INFO - Epoch 3, Global Batch 13868, Training Loss: 1.0635, Validation Loss: 0.8629, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 22:02:47,133 - INFO - Epoch 3, Global Batch 13870, Training Loss: 0.6583, Validation Loss: 0.9376, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 22:02:55,120 - INFO - Epoch 3, Global Batch 13872, Training Loss: 0.7748, Validation Loss: 0.8566, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 22:03:03,073 - INFO - Epoch 3, Global Batch 13874, Training Loss: 0.7931, Validation Loss: 0.8806, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 22:03:11,054 - INFO - Epoch 3, Global Batch 13876, Training Loss: 0.7059, Validation Loss: 0.8612, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 22:03:19,132 - INFO - Epoch 3, Global Batch 13878, Training Loss: 0.8480, Validation Loss: 0.8903, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 22:03:27,133 - INFO - Epoch 3, Global Batch 13880, Training Loss: 0.9242, Validation Loss: 0.8593, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6400
+2024-11-03 22:03:35,101 - INFO - Epoch 3, Global Batch 13882, Training Loss: 0.9349, Validation Loss: 0.8255, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6400
+2024-11-03 22:03:44,545 - INFO - Epoch 3, Global Batch 13884, Training Loss: 0.6961, Validation Loss: 0.8201, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6400
+2024-11-03 22:03:52,547 - INFO - Epoch 3, Global Batch 13886, Training Loss: 0.9060, Validation Loss: 0.8648, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6400
+2024-11-03 22:04:00,584 - INFO - Epoch 3, Global Batch 13888, Training Loss: 0.8360, Validation Loss: 0.8717, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 22:04:08,514 - INFO - Epoch 3, Global Batch 13890, Training Loss: 1.0683, Validation Loss: 0.8023, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 22:04:16,679 - INFO - Epoch 3, Global Batch 13892, Training Loss: 0.9106, Validation Loss: 0.8512, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6400
+2024-11-03 22:04:24,677 - INFO - Epoch 3, Global Batch 13894, Training Loss: 0.7947, Validation Loss: 0.9126, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6400
+2024-11-03 22:04:32,731 - INFO - Epoch 3, Global Batch 13896, Training Loss: 0.7750, Validation Loss: 0.8978, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6400
+2024-11-03 22:04:42,050 - INFO - Epoch 3, Global Batch 13898, Training Loss: 0.9022, Validation Loss: 0.8355, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 22:04:49,935 - INFO - Epoch 3, Global Batch 13900, Training Loss: 0.9184, Validation Loss: 0.9221, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 22:04:57,874 - INFO - Epoch 3, Global Batch 13902, Training Loss: 0.7889, Validation Loss: 0.8676, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 22:05:05,802 - INFO - Epoch 3, Global Batch 13904, Training Loss: 0.8854, Validation Loss: 0.9264, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 22:05:13,752 - INFO - Epoch 3, Global Batch 13906, Training Loss: 0.8898, Validation Loss: 0.8060, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 22:05:21,779 - INFO - Epoch 3, Global Batch 13908, Training Loss: 0.8587, Validation Loss: 0.8344, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.6000
+2024-11-03 22:05:29,687 - INFO - Epoch 3, Global Batch 13910, Training Loss: 0.7955, Validation Loss: 0.9127, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 22:05:37,682 - INFO - Epoch 3, Global Batch 13912, Training Loss: 0.6476, Validation Loss: 0.8769, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 22:05:45,492 - INFO - Epoch 3, Global Batch 13914, Training Loss: 0.7518, Validation Loss: 0.9289, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5600
+2024-11-03 22:05:53,529 - INFO - Epoch 3, Global Batch 13916, Training Loss: 0.8960, Validation Loss: 0.8665, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.5200
+2024-11-03 22:06:01,531 - INFO - Epoch 3, Global Batch 13918, Training Loss: 0.9083, Validation Loss: 0.8510, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 22:06:09,522 - INFO - Epoch 3, Global Batch 13920, Training Loss: 0.8255, Validation Loss: 0.8329, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4800
+2024-11-03 22:06:18,892 - INFO - Epoch 3, Global Batch 13922, Training Loss: 0.9514, Validation Loss: 0.8725, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 22:06:26,803 - INFO - Epoch 3, Global Batch 13924, Training Loss: 0.8725, Validation Loss: 0.9023, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4400
+2024-11-03 22:06:34,848 - INFO - Epoch 3, Global Batch 13926, Training Loss: 0.8702, Validation Loss: 0.8337, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 22:06:42,824 - INFO - Epoch 3, Global Batch 13928, Training Loss: 0.9374, Validation Loss: 0.8460, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 22:06:52,200 - INFO - Epoch 3, Global Batch 13930, Training Loss: 0.9101, Validation Loss: 0.8569, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.3600
+2024-11-03 22:07:00,182 - INFO - Epoch 3, Global Batch 13932, Training Loss: 0.7642, Validation Loss: 0.8045, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.3600
+2024-11-03 22:07:08,107 - INFO - Epoch 3, Global Batch 13934, Training Loss: 0.9156, Validation Loss: 0.7935, Validation Accuracy: 0.00%, Average Validation Accuracy (last 25): 0.3600
+2024-11-03 22:07:16,056 - INFO - Epoch 3, Global Batch 13936, Training Loss: 0.9481, Validation Loss: 0.8358, Validation Accuracy: 100.00%, Average Validation Accuracy (last 25): 0.4000
+2024-11-03 22:55:16,559 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 22:55:17,915 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 22:55:17,915 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 22:56:55,241 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 22:56:56,595 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 22:56:56,595 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 22:58:31,146 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 22:58:32,506 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 22:58:32,506 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 23:01:03,362 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:01:04,720 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 23:01:04,721 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 23:27:00,956 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:27:02,343 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 23:27:02,343 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 23:28:49,551 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:28:50,921 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 23:28:50,921 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 23:28:54,277 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_2.pth
+2024-11-03 23:30:18,492 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:30:19,862 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 23:30:19,862 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 23:30:24,173 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_2.pth
+2024-11-03 23:30:24,174 - INFO - Epoch 2 completed. Average Training Loss: 0.0000
+2024-11-03 23:31:03,033 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:31:04,392 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 23:31:04,392 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 23:31:08,653 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_2.pth
+2024-11-03 23:31:08,653 - INFO - Epoch 2 completed. Average Training Loss: 0.0000
+2024-11-03 23:31:36,169 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:31:37,529 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 23:31:37,529 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 23:31:40,843 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_2.pth
+2024-11-03 23:31:40,843 - INFO - Epoch 2 completed. Average Training Loss: 0.0000
+2024-11-03 23:32:16,015 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:32:16,099 - INFO - No checkpoint found. Starting from scratch.
+2024-11-03 23:33:29,612 - INFO - Epoch 1, Batch 2, Training Loss: nan, Validation Loss: 14.6659, Validation Accuracy: 0.0000
+2024-11-03 23:38:55,832 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:38:55,917 - INFO - No checkpoint found. Starting from scratch.
+2024-11-03 23:39:34,685 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:39:36,035 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 23:39:36,036 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 23:39:39,325 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_2.pth
+2024-11-03 23:39:39,325 - INFO - Epoch 2 completed. Average Training Loss: 0.0000
+2024-11-03 23:40:22,353 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:40:22,438 - INFO - No checkpoint found. Starting from scratch.
+2024-11-03 23:40:55,734 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:40:56,991 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 23:40:56,991 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 23:41:00,358 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_3.pth
+2024-11-03 23:41:00,358 - INFO - Epoch 3 completed. Average Training Loss: 0.0000
+2024-11-03 23:41:00,358 - INFO - Training complete.
+2024-11-03 23:41:29,901 - INFO - PyTorch version 2.5.0 available.
+2024-11-03 23:41:31,193 - INFO - Scheduler state loaded from checkpoint.
+2024-11-03 23:41:31,193 - INFO - Loaded checkpoint from checkpoints/checkpoint.pth.
+2024-11-03 23:41:43,746 - INFO - Checkpoint saved to checkpoints/epoch_checkpoint_3.pth
+2024-11-03 23:41:43,747 - INFO - Epoch 3 completed. Average Training Loss: 0.0000
+2024-11-03 23:42:53,077 - INFO - Epoch 4, Batch 13402, Training Loss: 111.2350, Validation Loss: 0.3486, Validation Accuracy: 0.0000
+2024-11-03 23:44:18,090 - INFO - Epoch 4, Batch 13404, Training Loss: 316.0497, Validation Loss: 0.3507, Validation Accuracy: 0.0000
+2024-11-03 23:44:51,712 - INFO - Checkpoint saved to checkpoints/checkpoint.pth
+2024-11-03 23:45:46,948 - INFO - Epoch 4, Batch 13406, Training Loss: 293.8121, Validation Loss: 0.3502, Validation Accuracy: 0.0000
