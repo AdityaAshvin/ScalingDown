@@ -5,7 +5,7 @@
 # ----------------------------------
 tokenizer:
   name: "t5-base"                  # Name or path of the tokenizer/model. E.g., "t5-base" or a local path.
-  save_dir: "tokenizers"           # Directory where the tokenizer will be saved or loaded from.
+  save_dir: "tokenizers/t5-base"          # Directory where the tokenizer will be saved or loaded from.
 
 # ----------------------------------
 # 2. Dataset Configuration
@@ -17,8 +17,8 @@ datasets:
     path: "datasets/winograd_tokenized.pth"
   
   socialiqa:
-    name: "social_iqa"
-    path: "datasets/socialiqa_tokenized.pth"      # Path to save the preprocessed SocialIQA dataset.
+    name: "allenai/social_i_qa"
+    path: "datasets/socialiqa_tokenized_large"      # Path to save the preprocessed SocialIQA dataset.
 
 
 # ----------------------------------
@@ -26,13 +26,9 @@ datasets:
 # ----------------------------------
 preprocessing:
   padding: "max_length"          # Padding strategy: "max_length" or "longest".
-  truncation: true               # Whether to truncate sequences exceeding max_length.
-  max_length_stage1: 256         # Maximum token length for Stage 1 inputs.
-  max_length_labels_stage1: 2    # Maximum token length for Stage 1 labels.
-  max_length_stage2: 512         # Maximum token length for Stage 2 inputs.
-  max_length_labels_stage2: 2    # Maximum token length for Stage 2 labels.
-  max_length_stage3: 512         # Maximum token length for Stage 3 inputs.
-  max_length_labels_stage3: 2    # Maximum token length for Stage 3 labels.
+  truncation: True               # Whether to truncate sequences exceeding max_length.
+  max_length: 512                # Maximum token length for Stage 1 inputs.
+  max_length_labels: 16         # Maximum token length for Stage 1 labels.
   num_proc: 4                    # Number of parallel processes for preprocessing.
 
 
@@ -40,34 +36,51 @@ preprocessing:
 # 4. Training Hyperparameters
 # ----------------------------------
 training:
-  batch_size: 8                           # Optimized batch size.
-  learning_rate: 0.000032331     # Optimized learning rate.
-  dropout_rate: 0.2100        # Optimized dropout rate.
-  weight_decay: 0.0223       # Optimized weight decay.
-  penalty_weight: 1.0                      # Weight for the penalty term in the custom loss function.
-  blank_penalty: 0.1                      # Penalty for blank answers in the custom loss function.
-  length_penalty_weight: 0.1               # Penalty weight for longer-than-one-token answers.
-  repeat_penalty: 1.3
-  single_token_bonus: 0.3                  # Bonus for single-token answers.
-  num_epochs_stage1: 8                     # Number of training epochs for Stage 1.
-  num_epochs_stage2: 8                     # Number of training epochs for Stage 2.
-  num_epochs_stage3: 3                     # Number of training epochs for Stage 3.
-  warmup_steps: 0                          # Optimized warmup steps.
+  batch_size: 1                           # Optimized batch size.
+  learning_rate: 3.0e-5                   # Optimized learning rate.
+  dropout_rate: 0.25                      # Optimized dropout rate.
+  weight_decay: 0.01                      # Optimized weight decay.
+  num_train_epochs: 10                          # Number of training epochs for Stage 1.
+  warmup_steps: 500                       # Optimized warmup steps.
   validation_frequency: 5
+  max_norm: 1.0
+  accumulation_steps: 4
 
 # ----------------------------------
 # 5. Logging and Checkpointing
 # ----------------------------------
 logging:
-  log_file: "logs/training.log"    # Path to save training and validation logs.
+  log_file: "logs/training_t5_large.log"    # Path to save training and validation logs.
 
 checkpointing:
-  save_dir: "checkpoints"          # Directory to save and load model checkpoints.
+  save_dir: "checkpoints/t5_large"          # Directory to save and load model checkpoints.
   checkpoint_frequency_batches: 10        # Frequency of checkpoint saving in batches.
+  checkpoint_frequency_milestone: 200
 
 # ----------------------------------
-# 6. Additional Configurations
+# 6. Bayesian Optimization Configuration
 # ----------------------------------
-random_seed: 42  # For reproducibility. You can set this in training.py as well.
+bayesian_optimization:
+  max_trials: 20                          # Number of trials for optimization.
+  tuning_params:
+    - name: "learning_rate"
+      min: 1.0e-6
+      max: 5.0e-5
+    - name: "batch_size"
+      options: [2, 4, 8]
+
+# ----------------------------------
+# 7. Hyperparameter Tuning Configuration
+# ----------------------------------
+hyperparameter_tuning:
+  kfold_splits: 5                # Number of splits for K-Fold cross-validation
+  num_trials: 25                 # Number of trials in hyperparameter tuning
+  kfold_split_index: 5           # Split index to select during cross-validation
+  subset_percentage: 0.035         # Percentage of the dataset to use for training
+
+# ----------------------------------
+# 8. Additional Configurations
+# ----------------------------------
+random_seed: 52  # For reproducibility. You can set this in training.py as well.
 scheduler:
   type: "linear"  # Options: "linear", "cosine", etc.
