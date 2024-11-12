@@ -1,5 +1,3 @@
-# data_preprocessing_flan.py
-
 import os
 import pickle
 from transformers import AutoTokenizer

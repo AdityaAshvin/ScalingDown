@@ -23,7 +23,7 @@ from sklearn.metrics import accuracy_score
 import time
 from scripts.training.callback import PrintSampleCallback, LossCollectorCallback
 from scripts.training.util import extract_answer, extract_rationale
-from scripts.data_preprocessing.data_preprocessing_flan import get_preprocessed_data
+from scripts.data_preprocessing.data_preprocessing_flan_aqua import get_preprocessed_data
 
 # Set up logging
 logging.basicConfig(
