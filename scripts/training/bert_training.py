@@ -67,24 +67,44 @@ def parse_args():
     return args
 
 
-def generate_training_graph(training_losses, mse_losses,
-                            training_graph_path):
-    # Plotting training loss against steps
+def generate_training_graph(training_losses, mse_losses, training_graph_path):
+    # Check if there are training losses to plot
     if len(training_losses) == 0:
         print("No training losses to plot.")
         return
 
     steps = range(1, len(training_losses) + 1)
 
-    plt.figure(figsize=(10, 6))
-    plt.plot(steps, training_losses, label='Training Loss')
+    # Create the primary plot for Training Loss
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+
+    color1 = 'tab:blue'
+    ax1.set_xlabel('Training Steps')
+    ax1.set_ylabel('Training Loss', color=color1)
+    ax1.plot(steps, training_losses, label='Training Loss', color=color1)
+    ax1.tick_params(axis='y', labelcolor=color1)
+    ax1.grid(True)
+
+    # If mse_losses is provided, plot it on the secondary y-axis
     if mse_losses is not None:
-        plt.plot(steps, mse_losses, label='Hidden-layer Loss')
-    plt.xlabel('Training Steps')
-    plt.ylabel('Loss')
-    plt.title('Training Loss Over Steps')
-    plt.legend()
-    plt.grid(True)
+        ax2 = ax1.twinx()  # Create a second y-axis sharing the same x-axis
+
+        color2 = 'tab:red'
+        ax2.set_ylabel('Hidden-layer Loss', color=color2)
+        ax2.plot(steps, mse_losses, label='Hidden-layer Loss', color=color2)
+        ax2.tick_params(axis='y', labelcolor=color2)
+
+        # Combine legends from both axes
+        lines_1, labels_1 = ax1.get_legend_handles_labels()
+        lines_2, labels_2 = ax2.get_legend_handles_labels()
+        ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper right')
+
+    else:
+        # If no mse_losses, just add the legend for training loss
+        ax1.legend(loc='upper right')
+
+    plt.title('Loss Over Steps')
+
     plt.savefig(training_graph_path)
     plt.close()
     print(f"Saved training loss graph in {training_graph_path}")
@@ -140,7 +160,11 @@ def main():
     num_labels = 3  # Negative, Neutral, Positive
     tokenizer_name = "distilbert-base-uncased"
     student_model_name = "distilbert-base-uncased"
-    teacher_model_name = "bert-base-uncased"  # You can use BERT as teacher
+    teacher_model_names = [
+        "bert-base-uncased",                   # Existing Teacher
+        "ProsusAI/finbert",                    # FinBert
+        "microsoft/deberta-large-mnli"         # DeBERTa
+    ]
 
     model_class = AutoModelForSequenceClassification
 
@@ -162,41 +186,62 @@ def main():
     if len(val_dataset) == 0:
         raise ValueError("Validation dataset is empty after applying data_portion. Please use a larger data_portion.")
 
-    # Initialize teacher and student models and tokenizer
+    # Initialize student tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
-    teacher_model = model_class.from_pretrained(teacher_model_name, num_labels=num_labels).to(device)
-    teacher_model.eval()
-
-    student_tokenizer = AutoTokenizer.from_pretrained(student_model_name)
     student_model = model_class.from_pretrained(student_model_name, num_labels=num_labels).to(device)
+
+    # Initialize teacher models and tokenizers
+    teacher_models = []
+    projection_layers = []
+    for teacher_name in teacher_model_names:
+        teacher_tokenizer = AutoTokenizer.from_pretrained(teacher_name)
+        teacher_model = model_class.from_pretrained(teacher_name, num_labels=num_labels).to(device)
+        teacher_model.eval()
+        teacher_models.append(teacher_model)
+
+        # Add a projection layer if hidden sizes differ
+        if teacher_model.config.hidden_size != student_model.config.hidden_size:
+            projection_layer = nn.Linear(
+                teacher_model.config.hidden_size,
+                student_model.config.hidden_size,
+                bias=False
+            ).to(device)
+        else:
+            projection_layer = None
+        projection_layers.append(projection_layer)
+
+    logger.info(f"Loaded {len(teacher_models)} teacher models.")
+
+    if hasattr(student_model.config, 'id2label'):
+        print(f"DistilBert Label Mapping:", teacher_models[1].config.id2label)
+    else:
+        print(f"student_model model does not have id2label mapping defined.")
+    for t_idx, teacher_model in enumerate(teacher_models):
+        if hasattr(teacher_model.config, 'id2label'):
+            print(f"{teacher_model_names[t_idx]} Label Mapping:", teacher_models[1].config.id2label)
+        else:
+            print(f"{teacher_model_names[t_idx]} model does not have id2label mapping defined.")
 
     # Enable gradient checkpointing if needed
     if hyperparams['gradient_checkpointing']:
         student_model.gradient_checkpointing_enable()
 
     # Prepare data collator
-    data_collator = DataCollatorWithPadding(tokenizer=student_tokenizer)
+    data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     # Define custom trainer with knowledge distillation
     class CustomTrainer(Trainer):
-        def __init__(self, *args, teacher_model=None, hidden_weight=0.5, **kwargs):
+        def __init__(self, *args, teacher_models=None, projection_layers=None, hidden_weight=0.5, **kwargs):
             super().__init__(*args, **kwargs)
-            self.teacher_model = teacher_model.to(self.args.device)
-            self.teacher_model.eval()
+            self.teacher_models = [tm.to(self.args.device) for tm in teacher_models]
+            for tm in self.teacher_models:
+                tm.eval()
+            self.projection_layers = projection_layers
             self.hidden_weight = hidden_weight
 
-            # Add a projection layer if hidden sizes differ
-            if self.teacher_model.config.hidden_size != self.model.config.hidden_size:
-                self.projection_layer = nn.Linear(
-                    self.teacher_model.config.hidden_size,
-                    self.model.config.hidden_size,
-                    bias=False
-                ).to(self.args.device)
-            else:
-                self.projection_layer = None
-
-            # For collecting MSE loss
+            # For collecting MSE losses
             self.mse_losses = []
+            self.kd_losses = []
             self.steps = []
 
         def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
@@ -212,43 +257,55 @@ def main():
             student_hidden_states = outputs.hidden_states[-1]
 
             if model.training:
-                with torch.no_grad():
-                    # Move teacher model to the same device as student model
-                    self.teacher_model.to(current_device)
-                    teacher_outputs = self.teacher_model(
-                        input_ids=inputs['input_ids'],
-                        attention_mask=inputs['attention_mask'],
-                        output_hidden_states=True,
+                total_kd_loss = 0.0
+                total_mse_loss = 0.0
+                num_teachers = len(self.teacher_models)
+
+                for idx, teacher in enumerate(self.teacher_models):
+                    with torch.no_grad():
+                        teacher_outputs = teacher(
+                            input_ids=inputs['input_ids'],
+                            attention_mask=inputs['attention_mask'],
+                            output_hidden_states=True,
+                        )
+                        teacher_logits = teacher_outputs.logits
+                        teacher_hidden_states = teacher_outputs.hidden_states[-1]
+
+                    # Compute KL divergence loss between student and teacher logits
+                    kd_loss = nn.KLDivLoss(reduction='batchmean')(
+                        F.log_softmax(student_logits / 1.0, dim=-1),
+                        F.softmax(teacher_logits / 1.0, dim=-1)
                     )
-                    teacher_logits = teacher_outputs.logits
-                    teacher_hidden_states = teacher_outputs.hidden_states[-1]
 
-                # Compute KL divergence loss between student and teacher logits
-                kd_loss = nn.KLDivLoss(reduction='batchmean')(
-                    F.log_softmax(student_logits / 1.0, dim=-1),
-                    F.softmax(teacher_logits / 1.0, dim=-1)
-                )
+                    # If hidden sizes differ, project teacher hidden states
+                    projection_layer = self.projection_layers[idx]
+                    if projection_layer is not None:
+                        teacher_hidden_states = projection_layer(teacher_hidden_states)
 
-                # If hidden sizes differ, project teacher hidden states
-                if self.projection_layer is not None:
-                    teacher_hidden_states = self.projection_layer(teacher_hidden_states)
+                    # Compute MSE loss between student and teacher hidden states
+                    mse_loss = F.mse_loss(student_hidden_states, teacher_hidden_states)
 
-                # Compute MSE loss between student and teacher hidden states
-                mse_loss = F.mse_loss(student_hidden_states, teacher_hidden_states)
+                    total_kd_loss += kd_loss
+                    total_mse_loss += mse_loss
+
+                # Average the losses over the number of teachers
+                avg_kd_loss = total_kd_loss / num_teachers
+                avg_mse_loss = total_mse_loss / num_teachers
 
                 # Total loss
-                total_loss = student_loss + self.hidden_weight * kd_loss + self.hidden_weight * mse_loss
+                total_loss = student_loss + self.hidden_weight * avg_kd_loss + self.hidden_weight * avg_mse_loss
 
                 self.log(
                     {
                         "student_loss": student_loss.detach().item(),
-                        "kd_loss": kd_loss.detach().item(),
-                        "mse_loss": mse_loss.detach().item()
+                        "kd_loss": avg_kd_loss.detach().item(),
+                        "mse_loss": avg_mse_loss.detach().item()
                     }
                 )
 
                 # Collect losses
-                self.mse_losses.append(mse_loss.detach().item())
+                self.kd_losses.append(avg_kd_loss.detach().item())
+                self.mse_losses.append(avg_mse_loss.detach().item())
                 self.steps.append(self.state.global_step)
 
             else:
@@ -290,9 +347,10 @@ def main():
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
-        tokenizer=student_tokenizer,
+        tokenizer=tokenizer,
         data_collator=data_collator,
-        teacher_model=teacher_model,
+        teacher_models=teacher_models,
+        projection_layers=projection_layers,
         hidden_weight=hidden_weight,
         compute_metrics=None,  # We will compute metrics manually
         callbacks=[loss_collector],
@@ -309,15 +367,16 @@ def main():
     trainer.save_model(f'./{dataset_name}_student_model')
     logger.info(f"Model saved to './{dataset_name}_student_model'.")
 
-    # Evaluate the student model on validation data
-    logger.info("Evaluation on student model started.")
-    print("Evaluating student model on validation data...")
-    student_model.eval()
+    # Evaluate the student & teacher models on validation data
+    logger.info("Evaluation on student and teacher models started.")
+    print("Evaluating student and teacher models on validation data...")
+
     student_predictions = []
+    teacher_predictions_list = [[] for _ in teacher_models]  # List of lists
     label_answers = []
 
-    # Also collect teacher predictions for comparison
-    teacher_predictions = []
+    # Change student model to eval mode
+    student_model.eval()
 
     for example in tqdm(val_dataset, desc="Evaluating student and teacher models"):
         input_ids = torch.tensor(example['input_ids']).unsqueeze(0).to(device)
@@ -334,14 +393,15 @@ def main():
             student_pred_label = torch.argmax(student_logits, dim=-1).cpu().numpy().item()
             student_predictions.append(student_pred_label)
 
-            # Teacher model prediction
-            teacher_outputs = teacher_model(
-                input_ids=input_ids,
-                attention_mask=attention_mask
-            )
-            teacher_logits = teacher_outputs.logits
-            teacher_pred_label = torch.argmax(teacher_logits, dim=-1).cpu().numpy().item()
-            teacher_predictions.append(teacher_pred_label)
+            # Teacher models predictions
+            for idx, teacher in enumerate(teacher_models):
+                teacher_outputs = teacher(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask
+                )
+                teacher_logits = teacher_outputs.logits
+                teacher_pred_label = torch.argmax(teacher_logits, dim=-1).cpu().numpy().item()
+                teacher_predictions_list[idx].append(teacher_pred_label)
 
             label_answers.append(labels)
 
@@ -358,9 +418,17 @@ def main():
         label_answers, student_predictions, average='weighted')
 
     # Compute teacher metrics
-    teacher_accuracy = accuracy_score(label_answers, teacher_predictions)
-    teacher_precision, teacher_recall, teacher_f1, _ = precision_recall_fscore_support(
-        label_answers, teacher_predictions, average='weighted')
+    teacher_metrics = []
+    for idx, teacher_preds in enumerate(teacher_predictions_list):
+        teacher_accuracy = accuracy_score(label_answers, teacher_preds)
+        teacher_precision, teacher_recall, teacher_f1, _ = precision_recall_fscore_support(
+            label_answers, teacher_preds, average='weighted')
+        teacher_metrics.append({
+            'accuracy': teacher_accuracy,
+            'precision': teacher_precision,
+            'recall': teacher_recall,
+            'f1': teacher_f1
+        })
 
     # Write report
     with open(output_report_path, 'w') as f:
@@ -373,27 +441,29 @@ def main():
         # Training metrics
         f.write("Training Metrics:\n")
         f.write(f"Total training time: {train_runtime:.2f} seconds\n")
-        f.write(f"Training samples per second: {train_result.metrics['train_samples_per_second']:.3f}\n")
-        f.write(f"Training steps per second: {train_result.metrics['train_steps_per_second']:.3f}\n")
-        f.write(f"Final training loss: {train_result.metrics['train_loss']:.4f}\n")
-        f.write(f"Epochs completed: {train_result.metrics['epoch']:.1f}\n\n")
+        f.write(f"Training samples per second: {train_result.metrics.get('train_samples_per_second', 'N/A')}\n")
+        f.write(f"Training steps per second: {train_result.metrics.get('train_steps_per_second', 'N/A')}\n")
+        f.write(f"Final training loss: {train_result.metrics.get('train_loss', 'N/A'):.4f}\n")
+        f.write(f"Epochs completed: {train_result.metrics.get('epoch', 'N/A'):.1f}\n\n")
 
         # Extract training metrics from loss_collector and trainer
         training_losses = loss_collector.student_losses
         mse_losses = trainer.mse_losses  # Collected in CustomTrainer
+        kd_losses = trainer.kd_losses
         steps = trainer.steps
 
         # Training progress evaluation
         if len(training_losses) > 0:
             f.write("Training Progress Evaluation:\n")
-            f.write("Step | Training Loss | Hidden-layer Loss\n")
-            f.write("------------------------------------------\n")
+            f.write("Step | Training Loss | KL Divergence Loss | MSE Loss\n")
+            f.write("-------------------------------------------------------\n")
             for i in range(len(training_losses)):
                 step = steps[i]
                 train_loss = training_losses[i]
+                kd_loss = kd_losses[i]
                 mse_loss = mse_losses[i]
-                f.write(f"{step:<5} | {train_loss:<13} | {mse_loss:<16}\n")
-            f.write("\nSee 'loss_curve.png' for visualization of training loss.\n\n")
+                f.write(f"{step:<5} | {train_loss:<13.4f} | {kd_loss:<18.4f} | {mse_loss:<8.4f}\n")
+            f.write("\nSee training_graph.png for visualization of training loss.\n\n")
         else:
             f.write("No training metrics available.\n\n")
 
@@ -404,12 +474,13 @@ def main():
         f.write(f"Recall: {student_recall * 100:.2f}%\n")
         f.write(f"F1 Score: {student_f1 * 100:.2f}%\n\n")
 
-        # Teacher evaluation
-        f.write("Teacher Model Evaluation on Validation Data:\n")
-        f.write(f"Accuracy: {teacher_accuracy * 100:.2f}%\n")
-        f.write(f"Precision: {teacher_precision * 100:.2f}%\n")
-        f.write(f"Recall: {teacher_recall * 100:.2f}%\n")
-        f.write(f"F1 Score: {teacher_f1 * 100:.2f}%\n\n")
+        # Teacher evaluations
+        for idx, metrics in enumerate(teacher_metrics):
+            f.write(f"Teacher Model {idx + 1} ({teacher_model_names[idx]}) Evaluation on Validation Data:\n")
+            f.write(f"Accuracy: {metrics['accuracy'] * 100:.2f}%\n")
+            f.write(f"Precision: {metrics['precision'] * 100:.2f}%\n")
+            f.write(f"Recall: {metrics['recall'] * 100:.2f}%\n")
+            f.write(f"F1 Score: {metrics['f1'] * 100:.2f}%\n\n")
 
         # Write validation examples
         num_examples_to_show = min(30, len(val_dataset))
@@ -420,13 +491,14 @@ def main():
             input_text = tokenizer.decode(input_ids, skip_special_tokens=True)
             actual_label = label_mapping[label_answers[idx]]
             student_pred_label = label_mapping[student_predictions[idx]]
-            teacher_pred_label = label_mapping[teacher_predictions[idx]]
+            teacher_preds = [label_mapping[teacher_predictions_list[t_idx][idx]] for t_idx in range(len(teacher_models))]
 
             f.write(f"\nExample {idx + 1}:\n")
             f.write(f"Input: {input_text}\n")
             f.write(f"Actual Label: {actual_label}\n")
             f.write(f"Student Predicted Label: {student_pred_label}\n")
-            f.write(f"Teacher Predicted Label: {teacher_pred_label}\n")
+            for t_idx, teacher_pred in enumerate(teacher_preds):
+                f.write(f"Teacher {t_idx + 1} Predicted Label: {teacher_pred}\n")
 
     print(f"Training complete. Report saved to {output_report_path}")
     logger.info(f"Training complete. Report saved to {output_report_path}")

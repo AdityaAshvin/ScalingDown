@@ -6,6 +6,7 @@ from transformers import AutoTokenizer
 from datasets import load_dataset, Dataset
 from sklearn.model_selection import train_test_split
 
+
 def get_preprocessed_data(save_dir=''):
     train_file = os.path.join(save_dir, 'train_bert_phrasebank.pkl')
     val_file = os.path.join(save_dir, 'val_bert_phrasebank.pkl')
@@ -25,6 +26,7 @@ def get_preprocessed_data(save_dir=''):
         train_dataset, val_dataset, test_dataset = preprocess_data(save_dir)
         return train_dataset, val_dataset, test_dataset
 
+
 def preprocess_data(save_dir):
     # Load the enhanced Financial PhraseBank dataset
     ds = load_dataset("descartes100/enhanced-financial-phrasebank")
@@ -37,7 +39,7 @@ def preprocess_data(save_dir):
     labels = [item['label'] for item in data]
 
     # Map numerical labels to integers (0, 1, 2)
-    label_mapping = {0: 0, 1: 1, 2: 2}  # Negative: 0, Neutral: 1, Positive: 2
+    label_mapping = {0: 1, 1: 2, 2: 0}  # negative -> 1, neutral -> 2, positive -> 0
     labels = [label_mapping[label] for label in labels]
 
     # Split data into train, validation, and test sets

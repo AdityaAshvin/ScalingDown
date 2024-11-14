@@ -20,7 +20,6 @@ def extract_answer(text):
     return ""
 
 
-
 def extract_rationale(text):
     # Case 1: Extract rationale before "The final answer:"
     final_answer_pos = text.lower().find(". The final")
