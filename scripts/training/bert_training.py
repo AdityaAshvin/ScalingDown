@@ -22,7 +22,6 @@ import yaml
 from tqdm import tqdm
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 import time
-from datasets import Dataset
 from scripts.training.callback import LossCollectorCallback
 
 # Set up logging
@@ -153,18 +152,26 @@ def main():
 
     logger.info("Loaded hyperparameters from config file.")
 
-    # Load data
-    from scripts.data_preprocessing.data_preprocessing_bert_phrasebank import get_preprocessed_data as get_phrasebank_data
-    train_dataset, val_dataset, test_dataset = get_phrasebank_data(save_dir='')
-
     num_labels = 3  # Negative, Neutral, Positive
     tokenizer_name = "distilbert-base-uncased"
     student_model_name = "distilbert-base-uncased"
     teacher_model_names = [
-        "bert-base-uncased",                   # Existing Teacher
-        "ProsusAI/finbert",                    # FinBert
-        "microsoft/deberta-large-mnli"         # DeBERTa
+        "bert-base-uncased",  # Existing Teacher
+        "ProsusAI/finbert"  # FinBert
     ]
+
+    # Load data
+    from scripts.data_preprocessing.data_preprocessing_bert_phrasebank import get_preprocessed_data
+    train_dataset, val_dataset, test_dataset = get_preprocessed_data(save_dir='',
+                                                                    teacher_model_names=teacher_model_names)
+
+    columns = ['input_ids', 'attention_mask', 'labels']
+    for teacher_name in teacher_model_names:
+        columns.extend([f'{teacher_name}_input_ids', f'{teacher_name}_attention_mask'])
+    # After loading the datasets
+    train_dataset.set_format(type='torch')
+    val_dataset.set_format(type='torch')
+    test_dataset.set_format(type='torch')
 
     model_class = AutoModelForSequenceClassification
 
@@ -187,14 +194,16 @@ def main():
         raise ValueError("Validation dataset is empty after applying data_portion. Please use a larger data_portion.")
 
     # Initialize student tokenizer and model
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+    student_tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
     student_model = model_class.from_pretrained(student_model_name, num_labels=num_labels).to(device)
 
     # Initialize teacher models and tokenizers
     teacher_models = []
     projection_layers = []
+    teacher_tokenizers = []
     for teacher_name in teacher_model_names:
         teacher_tokenizer = AutoTokenizer.from_pretrained(teacher_name)
+        teacher_tokenizers.append(teacher_tokenizer)
         teacher_model = model_class.from_pretrained(teacher_name, num_labels=num_labels).to(device)
         teacher_model.eval()
         teacher_models.append(teacher_model)
@@ -212,46 +221,44 @@ def main():
 
     logger.info(f"Loaded {len(teacher_models)} teacher models.")
 
-    if hasattr(student_model.config, 'id2label'):
-        print(f"DistilBert Label Mapping:", teacher_models[1].config.id2label)
-    else:
-        print(f"student_model model does not have id2label mapping defined.")
-    for t_idx, teacher_model in enumerate(teacher_models):
-        if hasattr(teacher_model.config, 'id2label'):
-            print(f"{teacher_model_names[t_idx]} Label Mapping:", teacher_models[1].config.id2label)
-        else:
-            print(f"{teacher_model_names[t_idx]} model does not have id2label mapping defined.")
-
     # Enable gradient checkpointing if needed
     if hyperparams['gradient_checkpointing']:
         student_model.gradient_checkpointing_enable()
 
     # Prepare data collator
-    data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+    data_collator = DataCollatorWithPadding(tokenizer=student_tokenizer)
 
     # Define custom trainer with knowledge distillation
     class CustomTrainer(Trainer):
-        def __init__(self, *args, teacher_models=None, projection_layers=None, hidden_weight=0.5, **kwargs):
+        def __init__(self, *args, teacher_models=None, teacher_model_names=None, projection_layers=None,
+                     hidden_weight=0.5, **kwargs):
             super().__init__(*args, **kwargs)
             self.teacher_models = [tm.to(self.args.device) for tm in teacher_models]
             for tm in self.teacher_models:
                 tm.eval()
+            self.teacher_model_names = teacher_model_names
             self.projection_layers = projection_layers
             self.hidden_weight = hidden_weight
 
-            # For collecting MSE losses
+            # For collecting MSE and KL losses
             self.mse_losses = []
             self.kd_losses = []
             self.steps = []
 
-        def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
+        def compute_loss(self, model, inputs, return_outputs=False):
             # Move inputs to the same device as the model
-            current_device = next(model.parameters()).device
-            inputs = {k: v.to(current_device) for k, v in inputs.items()}
-            labels = inputs.get("labels")
+            inputs = {k: v.to(model.device) for k, v in inputs.items()}
+            labels = inputs.pop("labels")
 
-            # Forward pass
-            outputs = model(**inputs, output_hidden_states=True)
+            # Extract student inputs
+            student_inputs = {
+                'input_ids': inputs.pop('input_ids'),
+                'attention_mask': inputs.pop('attention_mask'),
+                'labels': labels,
+            }
+
+            # Forward pass for the student model
+            outputs = model(**student_inputs, output_hidden_states=True)
             student_loss = outputs.loss
             student_logits = outputs.logits
             student_hidden_states = outputs.hidden_states[-1]
@@ -262,54 +269,54 @@ def main():
                 num_teachers = len(self.teacher_models)
 
                 for idx, teacher in enumerate(self.teacher_models):
+                    projection_layer = self.projection_layers[idx]
+                    teacher_name = self.teacher_model_names[idx]
+
+                    # Retrieve teacher inputs from inputs
+                    teacher_input_ids = inputs.pop(f'{teacher_name}_input_ids')
+                    teacher_attention_mask = inputs.pop(f'{teacher_name}_attention_mask')
+
+                    # Forward pass for the teacher model
+
+                    # Forward pass for the teacher model
                     with torch.no_grad():
                         teacher_outputs = teacher(
-                            input_ids=inputs['input_ids'],
-                            attention_mask=inputs['attention_mask'],
+                            input_ids=teacher_input_ids,
+                            attention_mask=teacher_attention_mask,
                             output_hidden_states=True,
                         )
                         teacher_logits = teacher_outputs.logits
                         teacher_hidden_states = teacher_outputs.hidden_states[-1]
 
-                    # Compute KL divergence loss between student and teacher logits
+                    # Compute losses
                     kd_loss = nn.KLDivLoss(reduction='batchmean')(
                         F.log_softmax(student_logits / 1.0, dim=-1),
                         F.softmax(teacher_logits / 1.0, dim=-1)
                     )
 
-                    # If hidden sizes differ, project teacher hidden states
-                    projection_layer = self.projection_layers[idx]
                     if projection_layer is not None:
                         teacher_hidden_states = projection_layer(teacher_hidden_states)
 
-                    # Compute MSE loss between student and teacher hidden states
                     mse_loss = F.mse_loss(student_hidden_states, teacher_hidden_states)
 
                     total_kd_loss += kd_loss
                     total_mse_loss += mse_loss
 
-                # Average the losses over the number of teachers
+                # Average the losses and compute total loss
                 avg_kd_loss = total_kd_loss / num_teachers
                 avg_mse_loss = total_mse_loss / num_teachers
+                total_loss = student_loss + self.hidden_weight * (avg_kd_loss + avg_mse_loss)
 
-                # Total loss
-                total_loss = student_loss + self.hidden_weight * avg_kd_loss + self.hidden_weight * avg_mse_loss
-
-                self.log(
-                    {
-                        "student_loss": student_loss.detach().item(),
-                        "kd_loss": avg_kd_loss.detach().item(),
-                        "mse_loss": avg_mse_loss.detach().item()
-                    }
-                )
-
-                # Collect losses
+                # Log and collect losses
+                self.log({
+                    "student_loss": student_loss.detach().item(),
+                    "kd_loss": avg_kd_loss.detach().item(),
+                    "mse_loss": avg_mse_loss.detach().item()
+                })
                 self.kd_losses.append(avg_kd_loss.detach().item())
                 self.mse_losses.append(avg_mse_loss.detach().item())
                 self.steps.append(self.state.global_step)
-
             else:
-                # During evaluation, only compute student_loss
                 total_loss = student_loss
 
             return (total_loss, outputs) if return_outputs else total_loss
@@ -336,6 +343,7 @@ def main():
         report_to='none',
         gradient_checkpointing=hyperparams['gradient_checkpointing'],
         eval_accumulation_steps=hyperparams['eval_accumulation_steps'],
+        remove_unused_columns = False
     )
 
     loss_collector = LossCollectorCallback()
@@ -347,12 +355,13 @@ def main():
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
-        tokenizer=tokenizer,
+        tokenizer=student_tokenizer,
         data_collator=data_collator,
         teacher_models=teacher_models,
+        teacher_model_names=teacher_model_names,
         projection_layers=projection_layers,
         hidden_weight=hidden_weight,
-        compute_metrics=None,  # We will compute metrics manually
+        compute_metrics=None,
         callbacks=[loss_collector],
     )
 
@@ -378,37 +387,34 @@ def main():
     # Change student model to eval mode
     student_model.eval()
 
+    # Evaluation loop
     for example in tqdm(val_dataset, desc="Evaluating student and teacher models"):
-        input_ids = torch.tensor(example['input_ids']).unsqueeze(0).to(device)
-        attention_mask = torch.tensor(example['attention_mask']).unsqueeze(0).to(device)
         labels = example['labels']
 
         with torch.no_grad():
             # Student model prediction
-            student_outputs = student_model(
-                input_ids=input_ids,
-                attention_mask=attention_mask
-            )
+            student_inputs = {
+                'input_ids': example['input_ids'].unsqueeze(0).to(device),
+                'attention_mask': example['attention_mask'].unsqueeze(0).to(device),
+            }
+            student_outputs = student_model(**student_inputs)
             student_logits = student_outputs.logits
             student_pred_label = torch.argmax(student_logits, dim=-1).cpu().numpy().item()
             student_predictions.append(student_pred_label)
 
             # Teacher models predictions
             for idx, teacher in enumerate(teacher_models):
-                teacher_outputs = teacher(
-                    input_ids=input_ids,
-                    attention_mask=attention_mask
-                )
+                teacher_name = teacher_model_names[idx]
+                teacher_inputs = {
+                    'input_ids': example[f'{teacher_name}_input_ids'].unsqueeze(0).to(device),
+                    'attention_mask': example[f'{teacher_name}_attention_mask'].unsqueeze(0).to(device),
+                }
+                teacher_outputs = teacher(**teacher_inputs)
                 teacher_logits = teacher_outputs.logits
                 teacher_pred_label = torch.argmax(teacher_logits, dim=-1).cpu().numpy().item()
                 teacher_predictions_list[idx].append(teacher_pred_label)
 
-            label_answers.append(labels)
-
-        # Free up memory
-        del input_ids, attention_mask, student_outputs, teacher_outputs
-        torch.cuda.empty_cache()
-        gc.collect()
+            label_answers.append(labels.item())
 
     logger.info("Evaluation completed.")
 
@@ -488,7 +494,7 @@ def main():
         label_mapping = {0: 'negative', 1: 'neutral', 2: 'positive'}
         for idx in range(num_examples_to_show):
             input_ids = val_dataset[idx]['input_ids']
-            input_text = tokenizer.decode(input_ids, skip_special_tokens=True)
+            input_text = student_tokenizer.decode(input_ids, skip_special_tokens=True)
             actual_label = label_mapping[label_answers[idx]]
             student_pred_label = label_mapping[student_predictions[idx]]
             teacher_preds = [label_mapping[teacher_predictions_list[t_idx][idx]] for t_idx in range(len(teacher_models))]
