@@ -156,8 +156,9 @@ def main():
     tokenizer_name = "distilbert-base-uncased"
     student_model_name = "distilbert-base-uncased"
     teacher_model_names = [
-        "bert-base-uncased",  # Existing Teacher
-        "ProsusAI/finbert"  # FinBert
+        "langecod/Financial_Phrasebank_RoBERTa",  # Fine-tuned BERT
+        "ProsusAI/finbert",  # FinBert
+        # "sismetanin/mbart_large-financial_phrasebank"
     ]
 
     # Load data
@@ -197,6 +198,13 @@ def main():
     student_tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
     student_model = model_class.from_pretrained(student_model_name, num_labels=num_labels).to(device)
 
+    # Update student model configuration
+    label_names = ['positive', 'negative', 'neutral']
+    label2id = {label: idx for idx, label in enumerate(label_names)}
+    id2label = {idx: label for idx, label in enumerate(label_names)}
+    student_model.config.label2id = label2id
+    student_model.config.id2label = id2label
+
     # Initialize teacher models and tokenizers
     teacher_models = []
     projection_layers = []
@@ -220,6 +228,20 @@ def main():
         projection_layers.append(projection_layer)
 
     logger.info(f"Loaded {len(teacher_models)} teacher models.")
+
+    # Print label mapping for each teacher model
+    for teacher_name, teacher_model in zip(teacher_model_names, teacher_models):
+        print(f"Teacher Model: {teacher_name}")
+        print(f"Number of Labels: {teacher_model.config.num_labels}")
+        print(f"Label Mapping (id2label): {teacher_model.config.id2label}")
+        print(f"Label Mapping (label2id): {teacher_model.config.label2id}")
+        print("-" * 50)
+
+    print(f"Teacher Model: {student_model_name}")
+    print(f"Number of Labels: {student_model.config.num_labels}")
+    print(f"Label Mapping (id2label): {student_model.config.id2label}")
+    print(f"Label Mapping (label2id): {student_model.config.label2id}")
+    print("-" * 50)
 
     # Enable gradient checkpointing if needed
     if hyperparams['gradient_checkpointing']:
@@ -491,7 +513,7 @@ def main():
         # Write validation examples
         num_examples_to_show = min(30, len(val_dataset))
         f.write(f"\nFirst {num_examples_to_show} Validation Examples:\n")
-        label_mapping = {0: 'negative', 1: 'neutral', 2: 'positive'}
+        label_mapping = {0: 'positive', 1: 'negative', 2: 'neutral'}
         for idx in range(num_examples_to_show):
             input_ids = val_dataset[idx]['input_ids']
             input_text = student_tokenizer.decode(input_ids, skip_special_tokens=True)
