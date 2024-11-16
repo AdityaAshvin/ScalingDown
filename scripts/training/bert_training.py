@@ -199,7 +199,7 @@ def main():
     student_model = model_class.from_pretrained(student_model_name, num_labels=num_labels).to(device)
 
     # Update student model configuration
-    label_names = ['positive', 'negative', 'neutral']
+    label_names = ['Negative', 'Neutral', 'Positive']
     label2id = {label: idx for idx, label in enumerate(label_names)}
     id2label = {idx: label for idx, label in enumerate(label_names)}
     student_model.config.label2id = label2id
@@ -229,19 +229,51 @@ def main():
 
     logger.info(f"Loaded {len(teacher_models)} teacher models.")
 
-    # Print label mapping for each teacher model
+    # After initializing teacher models
+    teacher_label_maps = []
     for teacher_name, teacher_model in zip(teacher_model_names, teacher_models):
+        teacher_id2label = teacher_model.config.id2label
+        teacher_label2id = teacher_model.config.label2id
+
+        # Ensure label names are consistent in capitalization
+        teacher_id2label = {k: v.capitalize() for k, v in teacher_id2label.items()}
+        teacher_label2id = {k.capitalize(): v for k, v in teacher_label2id.items()}
+
+        teacher_label_maps.append({
+            'name': teacher_name,
+            'id2label': teacher_id2label,
+            'label2id': teacher_label2id
+        })
         print(f"Teacher Model: {teacher_name}")
-        print(f"Number of Labels: {teacher_model.config.num_labels}")
-        print(f"Label Mapping (id2label): {teacher_model.config.id2label}")
-        print(f"Label Mapping (label2id): {teacher_model.config.label2id}")
+        print(f"Label Mapping (id2label): {teacher_id2label}")
+        print(f"Label Mapping (label2id): {teacher_label2id}")
         print("-" * 50)
 
-    print(f"Teacher Model: {student_model_name}")
+
+    print(f"Student Model: {student_model_name}")
     print(f"Number of Labels: {student_model.config.num_labels}")
     print(f"Label Mapping (id2label): {student_model.config.id2label}")
     print(f"Label Mapping (label2id): {student_model.config.label2id}")
     print("-" * 50)
+
+    # Create mapping from teacher label IDs to standard label IDs
+    teacher_id_maps = []
+    for teacher_label_map in teacher_label_maps:
+        teacher_name = teacher_label_map['name']
+        teacher_id2label = teacher_label_map['id2label']
+        teacher_label2id = teacher_label_map['label2id']
+
+        # Build a mapping from teacher label IDs to standard label IDs
+        id_map = {}
+        for teacher_label_id, teacher_label_name in teacher_id2label.items():
+            standard_label_id = label2id.get(teacher_label_name)
+            if standard_label_id is not None:
+                id_map[teacher_label_id] = standard_label_id
+            else:
+                print(
+                    f"Warning: Label '{teacher_label_name}' from teacher model '{teacher_name}' not found in standard labels.")
+
+        teacher_id_maps.append(id_map)
 
     # Enable gradient checkpointing if needed
     if hyperparams['gradient_checkpointing']:
@@ -293,12 +325,11 @@ def main():
                 for idx, teacher in enumerate(self.teacher_models):
                     projection_layer = self.projection_layers[idx]
                     teacher_name = self.teacher_model_names[idx]
+                    id_map = teacher_id_maps[idx]  # Access the id_map
 
                     # Retrieve teacher inputs from inputs
                     teacher_input_ids = inputs.pop(f'{teacher_name}_input_ids')
                     teacher_attention_mask = inputs.pop(f'{teacher_name}_attention_mask')
-
-                    # Forward pass for the teacher model
 
                     # Forward pass for the teacher model
                     with torch.no_grad():
@@ -310,10 +341,16 @@ def main():
                         teacher_logits = teacher_outputs.logits
                         teacher_hidden_states = teacher_outputs.hidden_states[-1]
 
+                    # Map teacher logits to standard labels
+                    # Rearrange the logits according to the id_map
+                    mapped_teacher_logits = torch.zeros_like(teacher_logits)
+                    for teacher_label_id, standard_label_id in id_map.items():
+                        mapped_teacher_logits[:, standard_label_id] = teacher_logits[:, teacher_label_id]
+
                     # Compute losses
                     kd_loss = nn.KLDivLoss(reduction='batchmean')(
                         F.log_softmax(student_logits / 1.0, dim=-1),
-                        F.softmax(teacher_logits / 1.0, dim=-1)
+                        F.softmax(mapped_teacher_logits / 1.0, dim=-1)
                     )
 
                     if projection_layer is not None:
@@ -409,7 +446,7 @@ def main():
     # Change student model to eval mode
     student_model.eval()
 
-    # Evaluation loop
+    # In your evaluation loop
     for example in tqdm(val_dataset, desc="Evaluating student and teacher models"):
         labels = example['labels']
 
@@ -433,10 +470,19 @@ def main():
                 }
                 teacher_outputs = teacher(**teacher_inputs)
                 teacher_logits = teacher_outputs.logits
-                teacher_pred_label = torch.argmax(teacher_logits, dim=-1).cpu().numpy().item()
+                teacher_pred_label_id = torch.argmax(teacher_logits, dim=-1).cpu().numpy().item()
+
+                # Map teacher label ID to standard label ID
+                id_map = teacher_id_maps[idx]
+                teacher_pred_label = id_map.get(teacher_pred_label_id)
+                if teacher_pred_label is None:
+                    print(
+                        f"Warning: Teacher model '{teacher_name}' predicted an unknown label ID {teacher_pred_label_id}.")
+                    continue  # or handle as appropriate
+
                 teacher_predictions_list[idx].append(teacher_pred_label)
 
-            label_answers.append(labels.item())
+        label_answers.append(labels.item())
 
     logger.info("Evaluation completed.")
 
@@ -513,7 +559,7 @@ def main():
         # Write validation examples
         num_examples_to_show = min(30, len(val_dataset))
         f.write(f"\nFirst {num_examples_to_show} Validation Examples:\n")
-        label_mapping = {0: 'positive', 1: 'negative', 2: 'neutral'}
+        label_mapping = {0: 'Negative', 1: 'Neutral', 2: 'Positive'}
         for idx in range(num_examples_to_show):
             input_ids = val_dataset[idx]['input_ids']
             input_text = student_tokenizer.decode(input_ids, skip_special_tokens=True)

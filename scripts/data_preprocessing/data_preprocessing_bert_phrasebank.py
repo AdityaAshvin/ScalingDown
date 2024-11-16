@@ -39,7 +39,7 @@ def preprocess_data(save_dir, teacher_model_names):
     labels = [item['label'] for item in data]
 
     # Map labels to match model expectations
-    label_mapping = {0: 1, 1: 2, 2: 0}  # negative -> 1, neutral -> 2, positive -> 0
+    label_mapping = {0: 0, 1: 1, 2: 2} # No change needed if labels already match
     labels = [label_mapping[label] for label in labels]
 
     # Split data into train, validation, and test sets
