@@ -2,13 +2,13 @@ num_train_epochs: 10
 per_device_train_batch_size: 8
 per_device_eval_batch_size: 1
 learning_rate: 3e-5
-evaluation_strategy: 'no' # cannot do evaluation due to memory issue
+evaluation_strategy: 'epoch' # cannot do evaluation due to memory issue
 eval_steps: 0
 save_strategy: 'epoch'
 save_steps: 0
 logging_steps: 100
 save_total_limit: 2
-load_best_model_at_end: False # cannot do evaluation due to memory issue
+load_best_model_at_end: True # cannot do evaluation due to memory issue
 metric_for_best_model: 'eval_loss'
 greater_is_better: False
 semantic_weight: 0.5
