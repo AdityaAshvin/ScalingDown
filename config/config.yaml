@@ -5,7 +5,7 @@
 # ----------------------------------
 tokenizer:
   name: "t5-base"                  # Name or path of the tokenizer/model. E.g., "t5-base" or a local path.
-  save_dir: "tokenizers/t5-base"          # Directory where the tokenizer will be saved or loaded from.
+  save_dir: "tokenizers/t5-base"   # Directory where the tokenizer will be saved or loaded from.
 
 # ----------------------------------
 # 2. Dataset Configuration
@@ -18,8 +18,11 @@ datasets:
   
   socialiqa:
     name: "allenai/social_i_qa"
-    path: "datasets/socialiqa_tokenized_large"      # Path to save the preprocessed SocialIQA dataset.
-
+    path: "datasets/socialiqa_tokenized_large"      # Base path to save the preprocessed SocialIQA dataset.
+    splits:
+      train: "train"
+      validation: "validation"
+      test: "test"
 
 # ----------------------------------
 # 3. Preprocessing Settings
@@ -27,35 +30,35 @@ datasets:
 preprocessing:
   padding: "max_length"          # Padding strategy: "max_length" or "longest".
   truncation: True               # Whether to truncate sequences exceeding max_length.
-  max_length: 512                # Maximum token length for Stage 1 inputs.
-  max_length_labels: 16         # Maximum token length for Stage 1 labels.
+  max_length: 512                # Maximum token length for inputs.
+  max_length_labels: 16          # Maximum token length for labels.
   num_proc: 4                    # Number of parallel processes for preprocessing.
-
 
 # ----------------------------------
 # 4. Training Hyperparameters
 # ----------------------------------
 training:
   batch_size: 1                           # Optimized batch size.
-  learning_rate: 3.0e-5                   # Optimized learning rate.
-  dropout_rate: 0.25                      # Optimized dropout rate.
-  weight_decay: 0.01                      # Optimized weight decay.
-  num_train_epochs: 10                          # Number of training epochs for Stage 1.
-  warmup_steps: 500                       # Optimized warmup steps.
-  validation_frequency: 5
-  max_norm: 1.0
-  accumulation_steps: 4
+  learning_rate: 2.6520023461797914e-05  # Optimal learning rate from hyperparameter tuning.
+  dropout_rate: 0.10209449828803513       # Optimal dropout rate from hyperparameter tuning.
+  weight_decay: 0.03315071292172689       # Optimal weight decay from hyperparameter tuning.
+  num_train_epochs_stage2: 10             # Number of training epochs for Stage 2.
+  warmup_steps: 500                       # Optimal warmup steps from hyperparameter tuning.
+  validation_frequency: 100               # Frequency (in batches) for performing validation.
+  max_norm: 1.0                           # Gradient clipping norm.
+  accumulation_steps: 4                   # Gradient accumulation steps.
+  alpha: 0.5                              # Weighting factor for distillation loss.
 
 # ----------------------------------
 # 5. Logging and Checkpointing
 # ----------------------------------
 logging:
-  log_file: "logs/training_t5_large.log"    # Path to save training and validation logs.
+  log_file: "logs/training_flan_t5_large.log"    # Path to save training and validation logs.
 
 checkpointing:
-  save_dir: "checkpoints/t5_large"          # Directory to save and load model checkpoints.
-  checkpoint_frequency_batches: 10        # Frequency of checkpoint saving in batches.
-  checkpoint_frequency_milestone: 200
+  save_dir: "checkpoints/flan_t5_large"          # Directory to save and load model checkpoints.
+  checkpoint_frequency_batches: 10               # Frequency of checkpoint saving in batches.
+  checkpoint_frequency_milestone: 200             # Frequency of milestone checkpoint saving in batches.
 
 # ----------------------------------
 # 6. Bayesian Optimization Configuration
@@ -74,13 +77,13 @@ bayesian_optimization:
 # ----------------------------------
 hyperparameter_tuning:
   kfold_splits: 5                # Number of splits for K-Fold cross-validation
-  num_trials: 25                 # Number of trials in hyperparameter tuning
+  num_trials: 45                # Number of trials in hyperparameter tuning
   kfold_split_index: 5           # Split index to select during cross-validation
-  subset_percentage: 0.035         # Percentage of the dataset to use for training
+  subset_percentage: 0.035        # Percentage of the dataset to use for training
 
 # ----------------------------------
 # 8. Additional Configurations
 # ----------------------------------
-random_seed: 52  # For reproducibility. You can set this in training.py as well.
+random_seed: 52  # For reproducibility. You can set this in training_stage2.py as well.
 scheduler:
   type: "linear"  # Options: "linear", "cosine", etc.

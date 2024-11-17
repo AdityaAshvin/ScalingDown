@@ -2,8 +2,7 @@
 
 import torch
 import torch.nn as nn
-from torch.amp import autocast, GradScaler  # Updated import for mixed precision
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 from transformers import T5ForConditionalGeneration, T5Tokenizer, get_linear_schedule_with_warmup, T5Config
 from torch.optim import AdamW
 import yaml
@@ -11,12 +10,13 @@ import argparse
 import logging
 import os
 import random
+import numpy as np
 from tqdm import tqdm
-from torch.nn.functional import mse_loss
+from sklearn.metrics import precision_recall_fscore_support
 from torch.nn.utils.rnn import pad_sequence
+from torch.utils.tensorboard import SummaryWriter
+from datasets import load_from_disk
 
-
-# Loss function for Knowledge Distillation
 # Loss function for Knowledge Distillation
 class DistillationLoss(nn.Module):
     def __init__(self, ignore_index=-100, alpha=0.5, temperature=2.0):
@@ -27,6 +27,16 @@ class DistillationLoss(nn.Module):
         self.kl_loss = nn.KLDivLoss(reduction='batchmean')
 
     def forward(self, student_logits, teacher_logits, labels):
+        vocab_size = student_logits.size(-1)  # Get vocab_size from logits
+        valid_labels = labels[labels != self.seq2seq_loss.ignore_index]
+        
+        if valid_labels.numel() > 0:
+            min_label = valid_labels.min().item()
+            max_label = valid_labels.max().item()
+            if min_label < 0 or max_label >= vocab_size:
+                raise ValueError(f"Label values out of range: min={min_label}, max={max_label}, vocab_size={vocab_size}")
+
+
         # Cross-entropy loss with actual labels
         ce_loss_per_token = self.seq2seq_loss(
             student_logits.view(-1, student_logits.size(-1)),
@@ -54,26 +64,19 @@ class DistillationLoss(nn.Module):
 
         return total_loss, ce_loss_per_sample.mean()
 
-
-
-def create_dataloaders(dataset, config, tokenizer):
+def create_dataloaders(train_dataset, val_dataset, config, tokenizer):
     """
-    Splits the dataset into training and validation sets and creates DataLoader objects for both.
+    Creates DataLoader objects for training and validation sets.
 
     Args:
-        dataset (Dataset): The processed dataset containing input_ids and labels.
+        train_dataset (Dataset): The preprocessed training dataset.
+        val_dataset (Dataset): The preprocessed validation dataset.
         config (dict): Configuration dictionary with batch size and other parameters.
         tokenizer (Tokenizer): The tokenizer used for padding.
 
     Returns:
         train_loader, val_loader (DataLoader, DataLoader): DataLoader objects for training and validation.
     """
-
-    # Split the dataset into training and validation sets
-    total_samples = len(dataset)
-    val_size = total_samples // (config["training"]["validation_frequency"] + 1)
-    train_size = total_samples - val_size
-    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
     def collate_fn(batch):
         # Collate function to handle padding within each batch
@@ -82,8 +85,12 @@ def create_dataloaders(dataset, config, tokenizer):
         
         # Pad sequences to the maximum length in the batch
         input_ids = pad_sequence(input_ids, batch_first=True, padding_value=tokenizer.pad_token_id)
-        labels = pad_sequence(labels, batch_first=True, padding_value=-100)  # Use -100 for ignored label positions
-        
+        labels = pad_sequence(labels, batch_first=True, padding_value=-100).long()  # Use -100 for ignored label positions
+
+        if (labels < -100).any():
+            logging.error("Labels contain values less than -100.")
+            logging.error(f"Labels: {labels}")
+                
         return {'input_ids': input_ids, 'labels': labels}
 
     # Create DataLoaders for training and validation
@@ -105,10 +112,8 @@ def create_dataloaders(dataset, config, tokenizer):
 
     return train_loader, val_loader
 
-
-
 def parse_args():
-    parser = argparse.ArgumentParser(description="Train T5 model with knowledge distillation.")
+    parser = argparse.ArgumentParser(description="Train Flan-T5-large model with knowledge distillation.")
     parser.add_argument("--config", type=str, default="config/config.yaml", help="Path to the configuration YAML file.")
     parser.add_argument("--dataset_percentage", type=float, default=1.0, help="Percentage of the dataset to use for training.")
     parser.add_argument("--checkpoint_path", type=str, default=None, help="Directory path to save/load checkpoints.")
@@ -134,77 +139,86 @@ def load_config(config_path):
     return config
 
 def load_tokenizer(config):
-    tokenizer_path = os.path.join(config["tokenizer"]["save_dir"], config["tokenizer"]["name"])
+    tokenizer_path = os.path.join(config["tokenizer"]["save_dir"])
     tokenizer = T5Tokenizer.from_pretrained(tokenizer_path)
+    vocab_size = len(tokenizer)
+    print(f"Tokenizer Vocabulary Size: {vocab_size}")
+    print("Token IDs for '<1>':", tokenizer.encode('<1>'))
+    print("Token IDs for '<2>':", tokenizer.encode('<2>'))
+    print("Token IDs for '<3>':", tokenizer.encode('<3>'))
     return tokenizer
 
-def load_model(config, model_name, device):
+def load_model(config, model_name, device, tokenizer):
     t5config = T5Config.from_pretrained(model_name)
-    t5config.dropout_rate = 0.3  # Adjust as needed
-    t5config.attention_dropout_rate = 0.3  # Adjust as needed
+    t5config.dropout_rate = config["training"]["dropout_rate"]       # Adjust as per config
+    t5config.attention_dropout_rate = config["training"]["dropout_rate"]  # Adjust as per config
     
     model = T5ForConditionalGeneration.from_pretrained(
         model_name,
         config=t5config
-    ).to(device)
+    )
+    
+    # Resize token embeddings to accommodate new special tokens
+    model.resize_token_embeddings(len(tokenizer))
+
+    model.to(device)
     return model
 
 def validate(student_model, teacher_model, tokenizer, val_loader, device, pad_token_id):
     student_model.eval()
     teacher_model.eval()
     val_loss = 0.0
-    correct = 0
-    total = 0
+    all_preds = []
+    all_labels = []
 
     with torch.no_grad():
-        # Randomly select one batch from val_loader
-        val_batch = random.choice(list(val_loader))
-        
-        input_ids = val_batch['input_ids'].to(device)
-        labels = val_batch['labels'].to(device)
-        
-        # Compute loss for the student model
-        student_outputs = student_model(input_ids=input_ids, labels=labels)
-        loss = student_outputs.loss
-        val_loss = loss.item()  # Single sample loss
+        for batch in tqdm(val_loader, desc="Validation", leave=False):
+            input_ids = batch['input_ids'].to(device)
+            labels = batch['labels'].to(device)
 
-        # Generate teacher's answer
-        teacher_generated_ids = teacher_model.generate(input_ids.to("cpu"), max_length=2)
-        teacher_answer = tokenizer.decode(teacher_generated_ids[0], skip_special_tokens=True).strip()
+            if labels.dtype != torch.long:
+                logging.warning(f"Labels are of type {labels.dtype}, converting to torch.long.")
+                labels = labels.long()
 
-        # Generate student's answer
-        student_generated_ids = student_model.generate(input_ids, max_length=2)
-        student_answer = tokenizer.decode(student_generated_ids[0], skip_special_tokens=True).strip()
+            # Teacher generates logits
+            teacher_outputs = teacher_model(input_ids=input_ids.to("cpu"), labels=labels.to("cpu"))
+            teacher_logits = teacher_outputs.logits.to(device)
 
-        # Decode input to get question and options for display
-        question_text = tokenizer.decode(input_ids[0], skip_special_tokens=True)
-        correct_answer = tokenizer.decode(labels[0], skip_special_tokens=True).strip()
+            # Student generates logits
+            student_outputs = student_model(input_ids=input_ids, labels=labels)
+            student_logits = student_outputs.logits
 
-        # Display question, correct answer, teacher's answer, and student's answer
-        print("\nValidation Sample:")
-        print(f"Question and Options: {question_text}")
-        print(f"Correct Answer: {correct_answer}")
-        print(f"Teacher's Answer: {teacher_answer}")
-        print(f"Student's Answer: {student_answer}")
+            # Compute loss
+            loss_fn = DistillationLoss(ignore_index=-100, alpha=config["training"]["alpha"], temperature=2.0)
+            loss, ce_loss = loss_fn(student_logits, teacher_logits, labels)
+            val_loss += loss.item()
 
-        # Check if the student's answer is correct
-        correct = (student_answer == correct_answer)
-        total = 1
+            # Predictions
+            preds = torch.argmax(student_logits, dim=-1)
+            # Replace -100 in labels with pad_token_id for decoding
+            labels_clean = torch.where(labels == -100, torch.tensor(pad_token_id).to(labels.device), labels)
+            all_preds.extend(preds.cpu().numpy().flatten())
+            all_labels.extend(labels_clean.cpu().numpy().flatten())
 
-    student_model.train()
-    teacher_model.train()
-    accuracy = correct / total if total > 0 else 0
-    return val_loss, accuracy
+    # Compute metrics
+    precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_preds, average='macro', zero_division=0)
+    avg_val_loss = val_loss / len(val_loader)
 
-def save_checkpoint(model, optimizer, scheduler, epoch, batch, checkpoint_dir, is_epoch_end=False, custom_path=None):
+    # Log metrics
+    return avg_val_loss, precision, recall, f1
+
+def save_checkpoint(model, optimizer, scheduler, epoch, batch, checkpoint_dir, is_epoch_end=False, custom_path=None,config=None):
     # Define the checkpoint filename based on type
-    filename = f"epoch_checkpoint_{epoch + 1}.pth" if is_epoch_end else "checkpoint.pth"
-    
     if custom_path:
         checkpoint_path = custom_path  # Use provided custom path for milestone checkpoints
+        os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)
     else:
-        filename = f"epoch_checkpoint_{epoch + 1}.pth" if is_epoch_end else "checkpoint.pth"
+        if is_epoch_end:
+            filename = f"epoch_checkpoint_{epoch + 1}.pth"
+        else:
+            filename = "checkpoint.pth"
         checkpoint_path = os.path.join(checkpoint_dir, filename)
+        os.makedirs(checkpoint_dir, exist_ok=True)
     
     # Prepare the checkpoint dictionary
     checkpoint = {
@@ -218,10 +232,14 @@ def save_checkpoint(model, optimizer, scheduler, epoch, batch, checkpoint_dir, i
     
     # Save the checkpoint
     torch.save(checkpoint, checkpoint_path)
-    if batch % 200 == 0:  # Milestone saving every 200 batches
-        milestone_path = os.path.join(checkpoint_dir, f"checkpoint-epoch{epoch + 1}-batch{batch}.pth")
-        torch.save(checkpoint, milestone_path)
     logging.info(f"Checkpoint saved to {checkpoint_path}")
+
+    # Milestone saving every checkpoint_frequency_milestone batches
+    if not custom_path and batch % config["checkpointing"]["checkpoint_frequency_milestone"] == 0:
+        milestone_path = os.path.join(checkpoint_dir, f"checkpoint-epoch{epoch + 1}-batch{batch}.pth")
+        os.makedirs(os.path.dirname(milestone_path), exist_ok=True)
+        torch.save(checkpoint, milestone_path)
+        logging.info(f"Milestone checkpoint saved to {milestone_path}")
 
 def load_checkpoint(model, optimizer, scheduler, checkpoint_dir):
     """
@@ -276,6 +294,12 @@ def load_checkpoint(model, optimizer, scheduler, checkpoint_dir):
         'best_val_accuracy': checkpoint.get('best_val_accuracy', 0.0),
     }
 
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
 def main():
     # Parse command-line arguments
     args = parse_args()
@@ -289,56 +313,64 @@ def main():
     log_file = args.log_file if args.log_file else config["logging"]["log_file"]
     setup_logging(log_file)
 
+    # Initialize TensorBoard writer
+    writer = SummaryWriter(log_dir=os.path.dirname(log_file)) if log_file else SummaryWriter()
+
+    # Set seeds for reproducibility
+    set_seed(config["random_seed"])
+
     # Load tokenizer
     tokenizer = load_tokenizer(config)
     pad_token_id = tokenizer.pad_token_id
-    
+
     # Load teacher and student models
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")
     
-    # Load teacher model onto CPU to save GPU memory if needed
-    teacher_model = load_model(config, "google/flan-t5-xl", "cpu")  # Change device to 'cpu' for teacher model
-    
+    # Load tokenizer first
+    tokenizer = load_tokenizer(config)
+    pad_token_id = tokenizer.pad_token_id
+
+    # Load teacher model onto CPU to save GPU memory
+    teacher_model = load_model(config, "google/flan-t5-xl", "cpu", tokenizer)  # Change device to 'cpu' for teacher model
+
     # Initialize the student model from scratch
-    # Initialize the student model from scratch
-    t5config = T5Config.from_pretrained("t5-base")  # Define T5 configuration
-    student_model = T5ForConditionalGeneration(config=t5config).to(device)
+    student_model = load_model(config, "google/flan-t5-large", device, tokenizer)  # Pass tokenizer
     student_model.apply(student_model._init_weights)  # Reinitialize entire model weights
 
     # Freeze the teacher model (we don’t want to update its weights)
     for param in teacher_model.parameters():
         param.requires_grad = False
 
-    # Load dataset
-    dataset = torch.load(config["datasets"]["socialiqa"]["path"])  # Path to the preprocessed SocialIQA dataset
+    # Load preprocessed datasets
+    try:
+        train_split_path = os.path.join(config["datasets"]["socialiqa"]["path"], config["datasets"]["socialiqa"]["splits"]["train"], "dataset.pt")
+        val_split_path = os.path.join(config["datasets"]["socialiqa"]["path"], config["datasets"]["socialiqa"]["splits"]["validation"], "dataset.pt")        
+    
+        train_dataset = load_from_disk(train_split_path)
+        val_dataset = load_from_disk(val_split_path)
+    except Exception as e:
+        logging.error(f"Error loading preprocessed datasets: {e}")
+        return
 
     # Create DataLoaders
-    train_loader, val_loader = create_dataloaders(dataset, config, tokenizer)
+    train_loader, val_loader = create_dataloaders(train_dataset, val_dataset, config, tokenizer)
 
     accumulation_steps = config["training"]["accumulation_steps"]
 
-    total_steps = (len(train_loader) // accumulation_steps) * config["training"]["num_epochs_stage2"]
+    total_steps = (len(train_loader) // accumulation_steps) * config["training"]["num_train_epochs_stage2"]
 
     # Define optimizer and scheduler for student model
-    optimizer = AdamW(student_model.parameters(), lr=config["training"]["learning_rate"])
+    optimizer = AdamW(student_model.parameters(), lr=config["training"]["learning_rate"], weight_decay=config["training"]["weight_decay"])
     scheduler = get_linear_schedule_with_warmup(
         optimizer, 
-        num_warmup_steps=int(0.1 * total_steps),
+        num_warmup_steps=config["training"]["warmup_steps"],
         num_training_steps=total_steps
     )
     distillation_loss_fn = DistillationLoss(
-        ignore_index=pad_token_id, 
-        alpha=config["training"]["alpha"])
-    scaler = GradScaler()
-
-    # Check dataset tensor values for NaNs or inf
-    for idx, sample in enumerate(dataset):
-        for name, tensor in sample.items():
-            if torch.is_tensor(tensor):
-                if torch.isnan(tensor).any():
-                    logging.warning(f"NaN detected in dataset field '{name}' at sample index {idx}")
-                if torch.isinf(tensor).any():
-                    logging.warning(f"Inf detected in dataset field '{name}' at sample index {idx}")
+        ignore_index=-100, 
+        alpha=config["training"]["alpha"],
+        temperature=2.0,
+    )
 
     # Initialize checkpoint loading
     checkpoint = load_checkpoint(student_model, optimizer, scheduler, checkpoint_dir)
@@ -347,7 +379,7 @@ def main():
     global_batch_count = checkpoint.get('batch', 0)
 
     # Training loop
-    for epoch in range(start_epoch, config["training"]["num_epochs_stage2"]):
+    for epoch in range(start_epoch, config["training"]["num_train_epochs_stage2"]):
         student_model.train()
         epoch_loss = 0.0
         batch_count = 0
@@ -357,7 +389,7 @@ def main():
         # Wrap train_loader in tqdm for progress bar display
         train_loader_iter = iter(tqdm(
             train_loader, 
-            desc=f"Epoch {epoch + 1}/{config['training']['num_epochs_stage2']}", 
+            desc=f"Epoch {epoch + 1}/{config['training']['num_train_epochs_stage2']}", 
             leave=False
         ))
 
@@ -373,86 +405,99 @@ def main():
         for batch_idx, batch in enumerate(train_loader_iter, start=1):
             # Log if NaNs are in input data or labels
             if not torch.isfinite(batch['input_ids']).all():
-                logging.warning(f"NaN found in input_ids at Batch {batch_idx}")
+                logging.warning(f"NaN found in input_ids at Epoch {epoch + 1}, Batch {batch_idx}")
             if not torch.isfinite(batch['labels']).all():
-                logging.warning(f"NaN found in labels at Batch {batch_idx}")
+                logging.warning(f"NaN found in labels at Epoch {epoch + 1}, Batch {batch_idx}")
             if epoch == start_epoch and current_batch < start_batch:
                 current_batch += 1
                 continue
 
-
-            global_batch_count += 1  # Increment global batch count
+            
             input_ids = batch['input_ids'].to(device)
             labels = batch['labels'].to(device)
 
+            # Debug: Inspect label values
+            labels_cpu = labels.cpu()
+            min_label = labels_cpu[labels_cpu != -100].min().item()
+            max_label = labels_cpu[labels_cpu != -100].max().item()
+            student_outputs = student_model(input_ids=input_ids, labels=labels)
+            student_logits = student_outputs.logits
+            vocab_size = student_logits.size(-1)  # Use the size from logits directly
+
+            logging.info(f"Label value range: min={min_label}, max={max_label}, vocab_size={vocab_size}")
+
+            if min_label < -100 or max_label >= vocab_size:
+                logging.error(f"Invalid label values detected: min={min_label}, max={max_label}, vocab_size={vocab_size}")                
+                continue  # Skip this batch
+
+            global_batch_count += 1  # Increment global batch count
+
             optimizer.zero_grad()
 
-            # Mixed precision training
-            with autocast(device_type="cuda" if torch.cuda.is_available() else "cpu"):
-                with torch.no_grad():
-                    teacher_input_ids = input_ids.to("cpu")
-                    teacher_labels = labels.to("cpu")
-                    teacher_outputs = teacher_model(input_ids=teacher_input_ids, labels=teacher_labels)
+            # Forward pass through teacher model
+            with torch.no_grad():
+                teacher_outputs = teacher_model(input_ids=input_ids.to("cpu"), labels=labels.to("cpu"))
+                teacher_logits = teacher_outputs.logits.to(device)
 
-                student_outputs = student_model(input_ids=input_ids, labels=labels)
+            # Forward pass through student model
+            
+            
 
-                # Compute loss (distillation + label loss)
-                loss, ce_loss = distillation_loss_fn(
-                    student_outputs.logits, 
-                    teacher_outputs.logits.to(device), 
-                    labels, 
-                )
+            # Compute loss (distillation + label loss)
+            loss, ce_loss = distillation_loss_fn(
+                student_logits, 
+                teacher_logits, 
+                labels
+            )
 
             # After computing loss
             if torch.isnan(loss):
-                logging.warning(f"NaN loss at Epoch {epoch + 1}, Batch {batch_idx + 1}. Skipping batch.")
+                logging.warning(f"NaN loss at Epoch {epoch + 1}, Batch {batch_idx}. Skipping batch.")
                 continue
 
-            # Scale the loss for mixed precision
-            scaler.scale(loss).backward()
+            # Backward pass with gradient accumulation
+            loss = loss / accumulation_steps
+            loss.backward()
+            epoch_loss += loss.item()
+            batch_count += 1
 
-            # After backward pass and before optimizer step
-            scaler.unscale_(optimizer)
-            torch.nn.utils.clip_grad_norm_(student_model.parameters(), max_norm=1.0)
-
-            # Check for NaNs in gradients
-            skip_update = False
-            for name, param in student_model.named_parameters():
-                if param.grad is not None and torch.isnan(param.grad).any():
-                    logging.warning(f"NaN detected in gradients of {name}. Skipping update.")
-                    skip_update = True
-                    break
-
-            if not skip_update:
-
-            # Proceed with optimizer step
-                scaler.step(optimizer)
-                scaler.update()
+            # Gradient Accumulation Step
+            if batch_idx % accumulation_steps == 0:
+                # Gradient clipping
+                torch.nn.utils.clip_grad_norm_(student_model.parameters(), config["training"]["max_norm"])
+                
+                optimizer.step()
                 scheduler.step()
                 optimizer.zero_grad()
 
-            epoch_loss += loss.item()
-            batch_count += 1
-            current_batch += 1
-        
             # Logging and validation at specified intervals
-            if (batch_idx) % validation_frequency == 0:
-                val_loss, accuracy = validate(student_model, teacher_model, tokenizer, val_loader, device, pad_token_id)
-                logging.info(f"Epoch {epoch + 1}, Global Batch {global_batch_count}, Training Loss: {loss.item():.4f}, Validation Loss: {val_loss:.4f}, Validation Accuracy: {accuracy:.4f}")
+            if global_batch_count % config["training"]["validation_frequency"] == 0:
+                avg_val_loss, precision, recall, f1 = validate(student_model, teacher_model, tokenizer, val_loader, device, pad_token_id)
+                logging.info(f"Epoch {epoch + 1}, Batch {global_batch_count}, Training Loss: {epoch_loss / batch_count:.4f}, Validation Loss: {avg_val_loss:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
+                
+                # Log metrics to TensorBoard
+                writer.add_scalar('Loss/Training', epoch_loss / batch_count, global_batch_count)
+                writer.add_scalar('Loss/Validation', avg_val_loss, global_batch_count)
+                writer.add_scalar('Metrics/Precision', precision, global_batch_count)
+                writer.add_scalar('Metrics/Recall', recall, global_batch_count)
+                writer.add_scalar('Metrics/F1', f1, global_batch_count)
+                
+                # Reset epoch_loss and batch_count after logging
+                epoch_loss = 0.0
+                batch_count = 0
 
             # Checkpointing logic
             if global_batch_count % config["checkpointing"]["checkpoint_frequency_batches"] == 0:
-                save_checkpoint(student_model, optimizer, scheduler, epoch, global_batch_count, checkpoint_dir, False)
+                save_checkpoint(student_model, optimizer, scheduler, epoch, global_batch_count, checkpoint_dir, is_epoch_end=False, config=config)
             if global_batch_count % config["checkpointing"]["checkpoint_frequency_milestone"] == 0:  # Milestone checkpoint
                 checkpoint_milestone = os.path.join(
                     checkpoint_dir, f"checkpoint-epoch{epoch + 1}-batch{global_batch_count}.pth"
                 )
-
-                save_checkpoint(student_model, optimizer, scheduler, epoch, batch_idx, checkpoint_dir, is_epoch_end=False, custom_path=checkpoint_milestone)                
+                save_checkpoint(student_model, optimizer, scheduler, epoch, global_batch_count, checkpoint_dir, is_epoch_end=False, custom_path=checkpoint_milestone, config=config)                
                 logging.info(f"Milestone checkpoint saved to {checkpoint_milestone}")
 
         # End of epoch checkpoint
-        save_checkpoint(student_model, optimizer, scheduler, epoch, batch_idx if batch_idx >=0 else 0, checkpoint_dir, True)
+        save_checkpoint(student_model, optimizer, scheduler, epoch, batch_idx if batch_idx >=0 else 0, checkpoint_dir, is_epoch_end=True,config=config)
 
         # Log the average loss for this epoch
         if batch_count > 0:
@@ -461,7 +506,14 @@ def main():
             avg_epoch_loss = 0.0
         logging.info(f"Epoch {epoch + 1} completed. Average Training Loss: {avg_epoch_loss:.4f}")
 
+    # Save the final trained student model
+    final_model_path = os.path.join(checkpoint_dir, "final_model")
+    student_model.save_pretrained(final_model_path)
+    tokenizer.save_pretrained(final_model_path)
+    logging.info(f"Final trained student model saved to {final_model_path}")
+
     logging.info("Training complete.")
+    writer.close()
 
 if __name__ == "__main__":
     main()
