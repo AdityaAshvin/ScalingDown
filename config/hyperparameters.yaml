@@ -12,7 +12,7 @@ load_best_model_at_end: True # cannot do evaluation due to memory issue
 metric_for_best_model: 'eval_loss'
 greater_is_better: False
 semantic_weight: 0.5
-hidden_weight: 0.5
+hidden_weight: 0.4
 bf16: False
 fp16: False
 gradient_accumulation_steps: 4
