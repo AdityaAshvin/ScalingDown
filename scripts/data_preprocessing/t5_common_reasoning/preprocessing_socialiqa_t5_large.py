@@ -50,6 +50,9 @@ def load_tokenizer(config):
 
 def preprocess_socialiqa(examples, tokenizer, config):
     inputs, targets = [], []
+    input_texts, label_texts = [], []  # New lists to store original texts
+
+    num_examples = len(examples["context"])
 
     for context, question, answerA, answerB, answerC, label in zip_longest(
         examples.get("context", []),
@@ -66,6 +69,9 @@ def preprocess_socialiqa(examples, tokenizer, config):
         except ValueError:
             logging.error(f"Label {label} could not be converted to an integer.")
             continue
+
+        # Adjust label to be in [1, 2, 3]
+        #label += 1  # Original labels are 0-based; adjust to 1-based
         
         # Check if label is 1 or 2 or 3
         if context and question and answerA and answerB and answerC and label in [1, 2, 3]:
@@ -78,12 +84,15 @@ def preprocess_socialiqa(examples, tokenizer, config):
             )
             inputs.append(input_str)
             targets.append(label_token)  # Use label directly as a string for the target
+
+            input_texts.append(input_str)
+            label_texts.append(label_token)
         else:
             logging.warning(f"Skipping invalid example with context: {context}, question: {question}, label: {label}")
 
     if not inputs:
         logging.error("No valid inputs found. Check the dataset structure.")
-        return {"input_ids": [], "labels": []}  # Provide default empty keys to avoid KeyError
+        return {"input_ids": [], "labels": [], "input_text": [], "label_text": []}  # Provide default empty keys to avoid KeyError
 
     # Tokenize inputs and targets
     model_inputs = tokenizer(
@@ -91,7 +100,6 @@ def preprocess_socialiqa(examples, tokenizer, config):
         padding=config["preprocessing"]["padding"],
         truncation=config["preprocessing"]["truncation"],
         max_length=config["preprocessing"]["max_length"],
-        return_tensors="pt"
     )
 
     labels = tokenizer(
@@ -99,14 +107,16 @@ def preprocess_socialiqa(examples, tokenizer, config):
         padding=config["preprocessing"]["padding"],
         truncation=config["preprocessing"]["truncation"],
         max_length=config["preprocessing"]["max_length_labels"],
-        return_tensors="pt",
     )
     
-    if labels["input_ids"].nelement() > 0:
-        labels["input_ids"] = torch.nan_to_num(labels["input_ids"], nan=tokenizer.pad_token_id)
-        labels["input_ids"][labels["input_ids"] == tokenizer.pad_token_id] = -100
+    if labels["input_ids"]:
+        labels["input_ids"] = [
+            [(l if l != tokenizer.pad_token_id else -100) for l in label] for label in labels["input_ids"]
+        ]
     
     model_inputs["labels"] = labels["input_ids"]
+    model_inputs["input_text"] = input_texts
+    model_inputs["label_text"] = label_texts
 
     logging.info(f"Sample input_ids: {model_inputs.get('input_ids', 'Not Found')}")
     logging.info(f"Sample labels: {labels.get('input_ids', 'Not Found')}")

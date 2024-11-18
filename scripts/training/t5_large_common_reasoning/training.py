@@ -79,20 +79,24 @@ def create_dataloaders(train_dataset, val_dataset, config, tokenizer):
     """
 
     def collate_fn(batch):
-        # Collate function to handle padding within each batch
+        # Extract texts
+        input_texts = [item['input_text'] for item in batch]
+        label_texts = [item['label_text'] for item in batch]
+
+        # Existing code
         input_ids = [item['input_ids'] for item in batch]
         labels = [item['labels'] for item in batch]
-        
-        # Pad sequences to the maximum length in the batch
+
+        # Pad sequences
         input_ids = pad_sequence(input_ids, batch_first=True, padding_value=tokenizer.pad_token_id)
-        labels = pad_sequence(labels, batch_first=True, padding_value=-100).long()  # Use -100 for ignored label positions
+        labels = pad_sequence(labels, batch_first=True, padding_value=-100).long()
 
-        if (labels < -100).any():
-            logging.error("Labels contain values less than -100.")
-            logging.error(f"Labels: {labels}")
-                
-        return {'input_ids': input_ids, 'labels': labels}
-
+        return {
+            'input_ids': input_ids,
+            'labels': labels,
+            'input_texts': input_texts,
+            'label_texts': label_texts
+        }
     # Create DataLoaders for training and validation
     train_loader = DataLoader(
         train_dataset,
@@ -104,7 +108,7 @@ def create_dataloaders(train_dataset, val_dataset, config, tokenizer):
 
     val_loader = DataLoader(
         val_dataset,
-        batch_size=config["training"]["batch_size"],
+        batch_size=config["validation"]["batch_size"],
         shuffle=False,
         collate_fn=collate_fn,
         num_workers=os.cpu_count()
@@ -164,48 +168,110 @@ def load_model(config, model_name, device, tokenizer):
     model.to(device)
     return model
 
-def validate(student_model, teacher_model, tokenizer, val_loader, device, pad_token_id):
+def validate(student_model, tokenizer, val_loader, device, pad_token_id, sample_fraction=1.0):
     student_model.eval()
-    teacher_model.eval()
     val_loss = 0.0
-    all_preds = []
-    all_labels = []
+    total_correct = 0
+    total_samples = 0
+    samples_printed = 0  # Counter for printed samples
+
+    # Determine the number of samples to use
+    total_samples_in_dataset = len(val_loader.dataset)
+    num_samples = max(1, int(sample_fraction * total_samples_in_dataset))
+
+    # Create a random subset of indices
+    subset_indices = np.random.choice(total_samples_in_dataset, num_samples, replace=False)
+
+    # Create a SubsetRandomSampler
+    sampler = torch.utils.data.SubsetRandomSampler(subset_indices)
+
+    # Create a new DataLoader with the sampler
+    val_loader_subset = DataLoader(
+        val_loader.dataset,
+        batch_size=val_loader.batch_size,
+        sampler=sampler,
+        collate_fn=val_loader.collate_fn,
+        num_workers=val_loader.num_workers
+    )
+
+    # Normalization function
+    import string
+    import re
+
+    def normalize_text(text):
+        # Remove special tokens like <pad>, </s>, <s> from text
+        tokens_to_remove = ['<pad>', '</s>', '<s>']
+        for token in tokens_to_remove:
+            text = text.replace(token, '')
+        text = text.strip()
+        
+        # If text is in format '<number>', extract the number
+        match = re.match(r'<(\d)>', text)
+        if match:
+            return match.group(1)
+        else:
+            # Try to find any digit in text
+            match = re.search(r'(\d)', text)
+            if match:
+                return match.group(1)
+            else:
+                # Additional normalization if needed
+                text = text.lower()
+                text = ' '.join(text.split())
+                return text
 
     with torch.no_grad():
-        for batch in tqdm(val_loader, desc="Validation", leave=False):
+        for batch_idx, batch in enumerate(tqdm(val_loader_subset, desc="Validation", leave=False)):
             input_ids = batch['input_ids'].to(device)
             labels = batch['labels'].to(device)
-
-            if labels.dtype != torch.long:
-                logging.warning(f"Labels are of type {labels.dtype}, converting to torch.long.")
-                labels = labels.long()
-
-            # Teacher generates logits
-            teacher_outputs = teacher_model(input_ids=input_ids.to("cpu"), labels=labels.to("cpu"))
-            teacher_logits = teacher_outputs.logits.to(device)
-
-            # Student generates logits
-            student_outputs = student_model(input_ids=input_ids, labels=labels)
-            student_logits = student_outputs.logits
+            input_texts = batch['input_texts']  # Original questions with options
+            label_texts = batch['label_texts']  # Original correct answers
 
             # Compute loss
-            loss_fn = DistillationLoss(ignore_index=-100, alpha=config["training"]["alpha"], temperature=2.0)
-            loss, ce_loss = loss_fn(student_logits, teacher_logits, labels)
+            student_outputs = student_model(input_ids=input_ids, labels=labels)
+            loss = student_outputs.loss
             val_loss += loss.item()
 
-            # Predictions
-            preds = torch.argmax(student_logits, dim=-1)
-            # Replace -100 in labels with pad_token_id for decoding
-            labels_clean = torch.where(labels == -100, torch.tensor(pad_token_id).to(labels.device), labels)
-            all_preds.extend(preds.cpu().numpy().flatten())
-            all_labels.extend(labels_clean.cpu().numpy().flatten())
+            # Generate predictions
+            generated_ids = student_model.generate(
+                input_ids=input_ids,
+                max_length=labels.size(1),
+                num_beams=5,
+                early_stopping=True
+            )
 
-    # Compute metrics
-    precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_preds, average='macro', zero_division=0)
-    avg_val_loss = val_loss / len(val_loader)
+            # Decode the generated sequences and labels
+            preds = tokenizer.batch_decode(generated_ids, skip_special_tokens=False)
+            label_ids = labels.cpu().numpy()
+            # Replace -100 with pad_token_id in labels
+            label_ids = np.where(label_ids == -100, pad_token_id, label_ids)
+            labels_decoded = tokenizer.batch_decode(label_ids, skip_special_tokens=False)
 
-    # Log metrics
-    return avg_val_loss, precision, recall, f1
+            # Compute accuracy and print sample data
+            for pred, label_text, input_text in zip(preds, label_texts, input_texts):
+                pred_norm = normalize_text(pred)
+                label_norm = normalize_text(label_text)
+                if pred_norm == label_norm:
+                    total_correct += 1
+                total_samples += 1
+
+                # Print the first sample
+                if samples_printed < 1:
+                    print("\nValidation Sample:")
+                    print(f"Question: {input_text}")
+                    print(f"Correct Answer: {label_text}")
+                    print(f"Student's Response: {pred}")
+                    print(f"Normalized Student's Response: {pred_norm}")
+                    print(f"Normalized Correct Answer: {label_norm}")
+                    samples_printed += 1
+
+    # Compute average loss
+    avg_val_loss = val_loss / len(val_loader_subset)
+    # Compute accuracy
+    accuracy = total_correct / total_samples if total_samples > 0 else 0.0
+
+    return avg_val_loss, accuracy
+
 
 def save_checkpoint(model, optimizer, scheduler, epoch, batch, checkpoint_dir, is_epoch_end=False, custom_path=None,config=None):
     # Define the checkpoint filename based on type
@@ -335,7 +401,7 @@ def main():
 
     # Initialize the student model from scratch
     student_model = load_model(config, "google/flan-t5-large", device, tokenizer)  # Pass tokenizer
-    student_model.apply(student_model._init_weights)  # Reinitialize entire model weights
+    # student_model.apply(student_model._init_weights)  # Reinitialize entire model weights
 
     # Freeze the teacher model (we don’t want to update its weights)
     for param in teacher_model.parameters():
@@ -424,7 +490,7 @@ def main():
             student_logits = student_outputs.logits
             vocab_size = student_logits.size(-1)  # Use the size from logits directly
 
-            logging.info(f"Label value range: min={min_label}, max={max_label}, vocab_size={vocab_size}")
+            # logging.info(f"Label value range: min={min_label}, max={max_label}, vocab_size={vocab_size}")
 
             if min_label < -100 or max_label >= vocab_size:
                 logging.error(f"Invalid label values detected: min={min_label}, max={max_label}, vocab_size={vocab_size}")                
@@ -472,15 +538,25 @@ def main():
 
             # Logging and validation at specified intervals
             if global_batch_count % config["training"]["validation_frequency"] == 0:
-                avg_val_loss, precision, recall, f1 = validate(student_model, teacher_model, tokenizer, val_loader, device, pad_token_id)
-                logging.info(f"Epoch {epoch + 1}, Batch {global_batch_count}, Training Loss: {epoch_loss / batch_count:.4f}, Validation Loss: {avg_val_loss:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
-                
+                avg_val_loss, accuracy = validate(
+                    student_model,
+                    tokenizer,
+                    val_loader,
+                    device,
+                    pad_token_id,
+                    sample_fraction=config["validation"]["val_percent"],  # Use 5% of the validation data
+                )
+                logging.info(
+                    f"Epoch {epoch + 1}, Batch {global_batch_count}, "
+                    f"Training Loss: {epoch_loss / batch_count:.4f}, "
+                    f"Validation Loss: {avg_val_loss:.4f}, "
+                    f"Accuracy: {accuracy:.4f}"
+                )
+            
                 # Log metrics to TensorBoard
                 writer.add_scalar('Loss/Training', epoch_loss / batch_count, global_batch_count)
                 writer.add_scalar('Loss/Validation', avg_val_loss, global_batch_count)
-                writer.add_scalar('Metrics/Precision', precision, global_batch_count)
-                writer.add_scalar('Metrics/Recall', recall, global_batch_count)
-                writer.add_scalar('Metrics/F1', f1, global_batch_count)
+                writer.add_scalar('Metrics/Accuracy', accuracy, global_batch_count)
                 
                 # Reset epoch_loss and batch_count after logging
                 epoch_loss = 0.0
