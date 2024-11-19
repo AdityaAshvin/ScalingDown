@@ -1,20 +1,24 @@
+# hyperparameters.yaml
+
 num_train_epochs: 10
 per_device_train_batch_size: 8
 per_device_eval_batch_size: 1
 learning_rate: 3e-5
-evaluation_strategy: 'epoch' # cannot do evaluation due to memory issue
+evaluation_strategy: 'epoch'
 eval_steps: 0
 save_strategy: 'epoch'
 save_steps: 0
 logging_steps: 100
 save_total_limit: 2
-load_best_model_at_end: True # cannot do evaluation due to memory issue
+load_best_model_at_end: True
 metric_for_best_model: 'eval_loss'
 greater_is_better: False
 semantic_weight: 0.5
-hidden_weight: 0.4
+hidden_weight: 0.5
 bf16: False
 fp16: False
 gradient_accumulation_steps: 4
 gradient_checkpointing: True
 eval_accumulation_steps: 1
+early_stopping_patience: 2
+temperature: 1.0
