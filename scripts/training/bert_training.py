@@ -63,12 +63,10 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-import numpy as np  # Import numpy for moving average
-
 def moving_average(data, window_size):
     return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
 
-def generate_training_graph(training_losses, mse_losses, training_graph_path, window_size=1, eval_losses=None, eval_steps=None):
+def generate_training_graph(training_losses, mse_losses, training_steps, training_graph_path, window_size=1, eval_losses=None, eval_steps=None):
     # Check if there are training losses to plot
     if len(training_losses) == 0:
         print("No training losses to plot.")
@@ -77,11 +75,11 @@ def generate_training_graph(training_losses, mse_losses, training_graph_path, wi
     if window_size > 1:
         training_losses_smooth = moving_average(training_losses, window_size)
         mse_losses_smooth = moving_average(mse_losses, window_size) if mse_losses is not None else None
-        steps = np.arange(window_size, len(training_losses) + 1)
+        steps = training_steps[window_size - 1:]
     else:
         training_losses_smooth = training_losses
         mse_losses_smooth = mse_losses
-        steps = np.arange(1, len(training_losses) + 1)
+        steps = training_steps
 
     # Create the primary plot for Training Loss
     fig, ax1 = plt.subplots(figsize=(10, 6))
@@ -125,7 +123,7 @@ def generate_training_graph(training_losses, mse_losses, training_graph_path, wi
 def main():
     logger.info("Starting script...")
     # Set random seed
-    set_seed(42)
+    set_seed(566)
 
     # Parse arguments
     args = parse_args()
@@ -155,9 +153,11 @@ def main():
     def sample_hyperparameters(search_space):
         return {key: random.choice(values) for key, values in search_space.items()}
 
-    num_trials = 5  # Number of random hyperparameter combinations to try
+    num_trials = 20
     best_accuracy = 0.0
     best_hyperparams = None
+
+    trial_results = []  # To store results of each trial
 
     for trial in range(num_trials):
         print(f"Starting trial {trial + 1}/{num_trials}")
@@ -437,6 +437,9 @@ def main():
         teacher_predictions_list = [[] for _ in teacher_models]  # List of lists
         label_answers = []
 
+        student_total_inference_time = 0.0
+        teacher_total_inference_time = [0.0 for _ in teacher_models]
+
         # Change student model to eval mode
         student_model.eval()
 
@@ -450,7 +453,11 @@ def main():
                     'input_ids': example['input_ids'].unsqueeze(0).to(device),
                     'attention_mask': example['attention_mask'].unsqueeze(0).to(device),
                 }
+                start_time_eval = time.time()
                 student_outputs = student_model(**student_inputs)
+                inference_time = time.time() - start_time_eval
+                student_total_inference_time += inference_time
+
                 student_logits = student_outputs.logits
                 student_pred_label = torch.argmax(student_logits, dim=-1).cpu().numpy().item()
                 student_predictions.append(student_pred_label)
@@ -462,7 +469,11 @@ def main():
                         'input_ids': example[f'{teacher_name}_input_ids'].unsqueeze(0).to(device),
                         'attention_mask': example[f'{teacher_name}_attention_mask'].unsqueeze(0).to(device),
                     }
+                    start_time_eval = time.time()
                     teacher_outputs = teacher(**teacher_inputs)
+                    inference_time = time.time() - start_time_eval
+                    teacher_total_inference_time[idx] += inference_time
+
                     teacher_logits = teacher_outputs.logits
                     teacher_pred_label = torch.argmax(teacher_logits, dim=-1).cpu().numpy().item()
                     teacher_predictions_list[idx].append(teacher_pred_label)
@@ -470,6 +481,10 @@ def main():
             label_answers.append(labels.item())
 
         logger.info("Evaluation completed.")
+
+        num_examples = len(test_dataset)
+        student_avg_inference_time = student_total_inference_time / num_examples
+        teacher_avg_inference_times = [total_time / num_examples for total_time in teacher_total_inference_time]
 
         # Compute student metrics
         student_accuracy = accuracy_score(label_answers, student_predictions)
@@ -498,6 +513,12 @@ def main():
             f.write(f"Number of training examples: {len(train_dataset)}\n")
             f.write(f"Number of test examples: {len(test_dataset)}\n\n")
 
+            # Hyperparameters used
+            f.write("Hyperparameters Used:\n")
+            for param, value in hyperparams.items():
+                f.write(f"{param}: {value}\n")
+            f.write("\n")
+
             # Training metrics
             f.write("Training Metrics:\n")
             f.write(f"Total training time: {train_runtime:.2f} seconds\n")
@@ -506,33 +527,13 @@ def main():
             f.write(f"Final training loss: {train_result.metrics.get('train_loss', 'N/A'):.4f}\n")
             f.write(f"Epochs completed: {train_result.metrics.get('epoch', 'N/A'):.1f}\n\n")
 
-            # Extract training metrics from loss_collector and trainer
-            training_losses = loss_collector.student_losses
-            mse_losses = trainer.mse_losses  # Collected in CustomTrainer
-            kd_losses = trainer.kd_losses
-            steps = trainer.steps
-
-            # Training progress evaluation
-            if len(training_losses) > 0:
-                f.write("Training Progress Evaluation:\n")
-                f.write("Step | Training Loss | KL Divergence Loss | MSE Loss\n")
-                f.write("-------------------------------------------------------\n")
-                for i in range(len(training_losses)):
-                    step = steps[i]
-                    train_loss = training_losses[i]
-                    kd_loss = kd_losses[i]
-                    mse_loss = mse_losses[i]
-                    f.write(f"{step:<5} | {train_loss:<13.4f} | {kd_loss:<18.4f} | {mse_loss:<8.4f}\n")
-                f.write("\nSee training_graph.png for visualization of training loss.\n\n")
-            else:
-                f.write("No training metrics available.\n\n")
-
             # Student evaluation
             f.write("\nStudent Model Evaluation on Test Data:\n")
             f.write(f"Accuracy: {student_accuracy * 100:.2f}%\n")
             f.write(f"Precision: {student_precision * 100:.2f}%\n")
             f.write(f"Recall: {student_recall * 100:.2f}%\n")
-            f.write(f"F1 Score: {student_f1 * 100:.2f}%\n\n")
+            f.write(f"F1 Score: {student_f1 * 100:.2f}%\n")
+            f.write(f"Average Inference Time per Example: {student_avg_inference_time * 1000:.2f} ms\n\n")
 
             # Teacher evaluations
             for idx, metrics in enumerate(teacher_metrics):
@@ -540,10 +541,11 @@ def main():
                 f.write(f"Accuracy: {metrics['accuracy'] * 100:.2f}%\n")
                 f.write(f"Precision: {metrics['precision'] * 100:.2f}%\n")
                 f.write(f"Recall: {metrics['recall'] * 100:.2f}%\n")
-                f.write(f"F1 Score: {metrics['f1'] * 100:.2f}%\n\n")
+                f.write(f"F1 Score: {metrics['f1'] * 100:.2f}%\n")
+                f.write(f"Average Inference Time per Example: {teacher_avg_inference_times[idx] * 1000:.2f} ms\n\n")
 
             # Write test examples
-            num_examples_to_show = min(30, len(test_dataset))
+            num_examples_to_show = min(10, len(test_dataset))
             f.write(f"\nFirst {num_examples_to_show} Test Examples:\n")
             label_mapping = {0: 'negative', 1: 'neutral', 2: 'positive'}
             for idx in range(num_examples_to_show):
@@ -560,6 +562,26 @@ def main():
                 for t_idx, teacher_pred in enumerate(teacher_preds):
                     f.write(f"Teacher {t_idx + 1} Predicted Label: {teacher_pred}\n")
 
+            # Training progress evaluation (moved to the bottom)
+            training_losses = loss_collector.student_losses
+            mse_losses = trainer.mse_losses  # Collected in CustomTrainer
+            kd_losses = trainer.kd_losses
+            steps = loss_collector.steps  # Use the steps collected by LossCollectorCallback
+
+            if len(training_losses) > 0:
+                f.write("\nTraining Progress Evaluation:\n")
+                f.write("Step | Training Loss | KL Divergence Loss | MSE Loss\n")
+                f.write("-------------------------------------------------------\n")
+                for i in range(len(training_losses)):
+                    step = steps[i]
+                    train_loss = training_losses[i]
+                    kd_loss = kd_losses[i]
+                    mse_loss = mse_losses[i]
+                    f.write(f"{step:<5} | {train_loss:<13.4f} | {kd_loss:<18.4f} | {mse_loss:<8.4f}\n")
+                f.write("\nSee training_graph.png for visualization of training loss.\n\n")
+            else:
+                f.write("No training metrics available.\n\n")
+
         print(f"Trial {trial + 1} complete. Report saved to {trial_output_report_path}")
         logger.info(f"Trial {trial + 1} complete. Report saved to {trial_output_report_path}")
 
@@ -568,11 +590,26 @@ def main():
         generate_training_graph(
             training_losses,
             mse_losses,
+            steps,  # Use the steps collected
             trial_training_graph_path,
             window_size=5,
             eval_losses=eval_loss_collector.eval_losses,
             eval_steps=eval_loss_collector.steps
         )
+
+        # Collect trial results
+        trial_result = {
+            'trial_number': trial + 1,
+            'hyperparameters': sampled_hyperparams.copy(),
+            'student_accuracy': student_accuracy,
+            'student_precision': student_precision,
+            'student_recall': student_recall,
+            'student_f1': student_f1,
+            'training_time': train_runtime,
+            'student_avg_inference_time': student_avg_inference_time,
+            # Include other metrics as needed
+        }
+        trial_results.append(trial_result)
 
         # Reset the loss collectors for the next trial
         loss_collector = LossCollectorCallback()
@@ -586,6 +623,23 @@ def main():
     # After all trials, report the best hyperparameters
     print(f"Best accuracy: {best_accuracy * 100:.2f}% with hyperparameters: {best_hyperparams}")
     logger.info(f"Best accuracy: {best_accuracy * 100:.2f}% with hyperparameters: {best_hyperparams}")
+
+    # Write summary report
+    summary_report_path = os.path.join(output_report_dir, f"{timestamp}-summary_report.txt")
+    with open(summary_report_path, 'w') as f:
+        f.write("Summary of all trials:\n\n")
+        for result in trial_results:
+            f.write(f"Trial {result['trial_number']}:\n")
+            f.write(f"Hyperparameters: {result['hyperparameters']}\n")
+            f.write(f"Student Model Metrics:\n")
+            f.write(f"  Accuracy: {result['student_accuracy'] * 100:.2f}%\n")
+            f.write(f"  Precision: {result['student_precision'] * 100:.2f}%\n")
+            f.write(f"  Recall: {result['student_recall'] * 100:.2f}%\n")
+            f.write(f"  F1 Score: {result['student_f1'] * 100:.2f}%\n")
+            f.write(f"  Average Inference Time per Example: {result['student_avg_inference_time'] * 1000:.2f} ms\n")
+            f.write(f"Training Time: {result['training_time']:.2f} seconds\n")
+            f.write("\n")
+        f.write(f"Best accuracy: {best_accuracy * 100:.2f}% with hyperparameters: {best_hyperparams}\n")
 
 if __name__ == "__main__":
     main()
