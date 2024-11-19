@@ -1,45 +1,7 @@
 # callback.py
+
 from transformers import TrainerCallback
-from scripts.training.util import extract_answer
 import torch
-
-class PrintSampleCallback(TrainerCallback):
-    def __init__(self, tokenizer, sample_input_text, correct_answer, interval_steps=100):
-        super().__init__()
-        self.tokenizer = tokenizer
-        self.sample_input_text = sample_input_text
-        self.correct_answer = correct_answer
-        self.interval_steps = interval_steps
-        self.sample_input_ids = self.tokenizer.encode(self.sample_input_text, return_tensors='pt')
-
-    def on_log(self, args, state, control, logs=None, model=None, **kwargs):
-        """
-        Trigger callback to print samples at specified intervals during logging.
-        """
-        # Trigger the callback to print samples at the specified interval
-        if state.global_step % self.interval_steps == 0 and state.global_step != 0:
-            if model is not None:
-                model.eval()
-                with torch.no_grad():
-                    input_ids = self.sample_input_ids.to(model.device)
-                    output_ids = model.generate(
-                        input_ids=input_ids,
-                        max_length=150,
-                        num_beams=4,
-                        early_stopping=True
-                    )
-                output_text = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
-
-                # Extract the predicted answer from the generated output
-                predicted_answer = extract_answer(output_text)
-
-                print(f"\nSample at step {state.global_step}:")
-                print(f"Input: {self.sample_input_text}")
-                print(f"Correct Answer: {self.correct_answer}")
-                print(f"Predicted Answer: {predicted_answer}")
-                print(f"Model Output: {output_text}\n")
-
-        super().on_log(args, state, control, logs=logs, **kwargs)
 
 class LossCollectorCallback(TrainerCallback):
     def __init__(self):
@@ -59,3 +21,26 @@ class LossCollectorCallback(TrainerCallback):
                 self.steps.append(state.global_step)
             else:
                 print("No 'student_loss' and 'mse_loss' found in logs.")
+
+class EvalLossCollectorCallback(TrainerCallback):
+    def __init__(self):
+        super().__init__()
+        self.eval_losses = []
+        self.steps = []
+
+    def on_evaluate(self, args, state, control, metrics=None, **kwargs):
+        """
+        Collects 'eval_loss' from metrics at each evaluation step.
+        """
+        if metrics is not None:
+            print(f"Metrics during evaluation: {metrics}")  # Debug print
+            if 'eval_loss' in metrics:
+                self.eval_losses.append(metrics['eval_loss'])
+                self.steps.append(state.global_step)
+            elif 'loss' in metrics:
+                self.eval_losses.append(metrics['loss'])
+                self.steps.append(state.global_step)
+            else:
+                print("No 'eval_loss' or 'loss' found in metrics during evaluation.")
+        else:
+            print("Metrics is None during evaluation.")

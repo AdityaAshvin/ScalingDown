@@ -42,10 +42,10 @@ def preprocess_data(save_dir, teacher_model_names):
 
     # Split data into train, validation, and test sets
     X_train_val, X_test, y_train_val, y_test = train_test_split(
-        sentences, labels, test_size=0.2, random_state=42, stratify=labels
+        sentences, labels, test_size=0.2, random_state=566, stratify=labels
     )
     X_train, X_val, y_train, y_val = train_test_split(
-        X_train_val, y_train_val, test_size=0.2, random_state=42, stratify=y_train_val
+        X_train_val, y_train_val, test_size=0.2, random_state=566, stratify=y_train_val
     )
 
     # Initialize student tokenizer
