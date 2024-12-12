@@ -44,10 +44,10 @@ training:
   weight_decay: 0.03315071292172689       # Optimal weight decay from hyperparameter tuning.
   num_train_epochs_stage2: 10             # Number of training epochs for Stage 2.
   warmup_steps: 500                       # Optimal warmup steps from hyperparameter tuning.
-  validation_frequency: 75               # Frequency (in batches) for performing validation.
+  validation_frequency: 5               # Frequency (in batches) for performing validation.
   max_norm: 1.0                           # Gradient clipping norm.
   accumulation_steps: 4                   # Gradient accumulation steps.
-  alpha: 0.5                              # Weighting factor for distillation loss.
+  alpha: 0.8                              # Weighting factor for distillation loss.
 
 # ----------------------------------
 # 5. Logging and Checkpointing
@@ -86,7 +86,7 @@ hyperparameter_tuning:
 # ----------------------------------
 validation:
   batch_size: 16  # Increase this number based on your hardware capabilities
-  val_percent: 0.025
+  val_percent: 0.01
 
 
 # ----------------------------------

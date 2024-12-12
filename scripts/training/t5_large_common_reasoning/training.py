@@ -120,7 +120,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train Flan-T5-large model with knowledge distillation.")
     parser.add_argument("--config", type=str, default="config/config.yaml", help="Path to the configuration YAML file.")
     parser.add_argument("--dataset_percentage", type=float, default=1.0, help="Percentage of the dataset to use for training.")
-    parser.add_argument("--checkpoint_path", type=str, default=None, help="Directory path to save/load checkpoints.")
+    parser.add_argument("--checkpoint_dir", type=str, default=None, help="Directory path to save/load checkpoints.")
+    parser.add_argument("--checkpoint_file", type=str, default=None, help="Checkpoint file to load (optional).")
+    parser.add_argument("--global_batch_count", type=int, default=None, help="Global batch count to resume from (if not in checkpoint).")
     parser.add_argument("--log_file", type=str, default=None, help="File path for logging.")
     return parser.parse_args()
 
@@ -273,7 +275,7 @@ def validate(student_model, tokenizer, val_loader, device, pad_token_id, sample_
     return avg_val_loss, accuracy
 
 
-def save_checkpoint(model, optimizer, scheduler, epoch, batch, checkpoint_dir, is_epoch_end=False, custom_path=None,config=None):
+def save_checkpoint(model, optimizer, scheduler, epoch, batch, global_batch_count, checkpoint_dir, is_epoch_end=False, custom_path=None,config=None):
     # Define the checkpoint filename based on type
     if custom_path:
         checkpoint_path = custom_path  # Use provided custom path for milestone checkpoints
@@ -290,6 +292,7 @@ def save_checkpoint(model, optimizer, scheduler, epoch, batch, checkpoint_dir, i
     checkpoint = {
         'epoch': epoch,
         'batch': batch,
+        'global_batch_count': global_batch_count,
         'is_epoch_end': is_epoch_end,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
@@ -307,7 +310,7 @@ def save_checkpoint(model, optimizer, scheduler, epoch, batch, checkpoint_dir, i
         torch.save(checkpoint, milestone_path)
         logging.info(f"Milestone checkpoint saved to {milestone_path}")
 
-def load_checkpoint(model, optimizer, scheduler, checkpoint_dir):
+def load_checkpoint(model, optimizer, scheduler, checkpoint_dir, checkpoint_file=None, manual_global_batch_count=None):
     """
     Loads the latest checkpoint from the specified directory if available.
 
@@ -320,12 +323,17 @@ def load_checkpoint(model, optimizer, scheduler, checkpoint_dir):
     Returns:
         dict: A dictionary with the latest epoch, batch, best_val_loss, best_val_accuracy, or defaults if no checkpoint found.
     """
-    checkpoint_path = os.path.join(checkpoint_dir, "checkpoint.pth")
+    if checkpoint_file:
+        checkpoint_path = os.path.join(checkpoint_dir, checkpoint_file)
+    else:
+        checkpoint_path = os.path.join(checkpoint_dir, "checkpoint.pth")
+
     if not os.path.exists(checkpoint_path):
         logging.info("No checkpoint found. Starting from scratch.")
         return {
             'epoch': 0, 
             'batch': 0, 
+            'global_batch_count': manual_global_batch_count or 0,            
             'best_val_loss': float('inf'), 
             'best_val_accuracy': 0.0, 
         }
@@ -340,6 +348,17 @@ def load_checkpoint(model, optimizer, scheduler, checkpoint_dir):
         logging.info("Scheduler state loaded from checkpoint.")
 
     logging.info(f"Loaded checkpoint from {checkpoint_path}.")
+
+    # Retrieve global_batch_count
+    if 'global_batch_count' in checkpoint:
+        global_batch_count = checkpoint['global_batch_count']
+    else:
+        if manual_global_batch_count is not None:
+            global_batch_count = manual_global_batch_count
+            logging.warning(f"'global_batch_count' not found in checkpoint. Using provided value: {global_batch_count}")
+        else:
+            logging.error("Checkpoint does not contain 'global_batch_count' and no value was provided. Cannot proceed.")
+            exit(1)  # Or handle as appropriate
 
     # Determine if the checkpoint was saved at epoch end
     is_epoch_end = checkpoint.get('is_epoch_end', False)
@@ -356,6 +375,7 @@ def load_checkpoint(model, optimizer, scheduler, checkpoint_dir):
     return {
         'epoch': start_epoch,
         'batch': start_batch,
+        'global_batch_count': global_batch_count,  # Return it here
         'best_val_loss': checkpoint.get('best_val_loss', float('inf')),
         'best_val_accuracy': checkpoint.get('best_val_accuracy', 0.0),
     }
@@ -375,7 +395,7 @@ def main():
     validation_frequency = config["training"]["validation_frequency"]
 
     # Set up logging
-    checkpoint_dir = args.checkpoint_path if args.checkpoint_path else config["checkpointing"]["save_dir"]
+    checkpoint_dir = args.checkpoint_dir if args.checkpoint_dir else config["checkpointing"]["save_dir"]
     log_file = args.log_file if args.log_file else config["logging"]["log_file"]
     setup_logging(log_file)
 
@@ -439,148 +459,214 @@ def main():
     )
 
     # Initialize checkpoint loading
-    checkpoint = load_checkpoint(student_model, optimizer, scheduler, checkpoint_dir)
+    checkpoint = load_checkpoint(
+        student_model, 
+        optimizer, 
+        scheduler, 
+        checkpoint_dir,
+        checkpoint_file=args.checkpoint_file,
+        manual_global_batch_count=args.global_batch_count
+    )
     start_epoch = checkpoint.get('epoch', 0)
     start_batch = checkpoint.get('batch', 0)
-    global_batch_count = checkpoint.get('batch', 0)
+    global_batch_count = checkpoint.get('global_batch_count', 0)
 
-    # Training loop
-    for epoch in range(start_epoch, config["training"]["num_train_epochs_stage2"]):
-        student_model.train()
-        epoch_loss = 0.0
-        batch_count = 0
-        current_batch = 0
-        batch_idx = -1
-        
-        # Wrap train_loader in tqdm for progress bar display
-        train_loader_iter = iter(tqdm(
-            train_loader, 
-            desc=f"Epoch {epoch + 1}/{config['training']['num_train_epochs_stage2']}", 
-            leave=False
-        ))
-
-        # If resuming mid-epoch, continue from the last batch
-        if epoch == start_epoch and start_batch > 0:
-            for _ in range(start_batch):
-                try:
-                    next(train_loader_iter)
-                except StopIteration:
-                    break
-            current_batch = start_batch  # Set the current batch to start_batch
-
-        for batch_idx, batch in enumerate(train_loader_iter, start=1):
-            # Log if NaNs are in input data or labels
-            if not torch.isfinite(batch['input_ids']).all():
-                logging.warning(f"NaN found in input_ids at Epoch {epoch + 1}, Batch {batch_idx}")
-            if not torch.isfinite(batch['labels']).all():
-                logging.warning(f"NaN found in labels at Epoch {epoch + 1}, Batch {batch_idx}")
-            if epoch == start_epoch and current_batch < start_batch:
-                current_batch += 1
-                continue
-
+    logging.info(f"Resuming training from epoch {start_epoch}, batch {start_batch}, global batch count {global_batch_count}.")
+    try:
+        # Training loop
+        for epoch in range(start_epoch, config["training"]["num_train_epochs_stage2"]):
+            student_model.train()
+            epoch_loss = 0.0
+            batch_count = 0
+            current_batch = 0
+            batch_idx = -1
             
-            input_ids = batch['input_ids'].to(device)
-            labels = batch['labels'].to(device)
+            # Wrap train_loader in tqdm for progress bar display
+            train_loader_iter = iter(tqdm(
+                train_loader, 
+                desc=f"Epoch {epoch + 1}/{config['training']['num_train_epochs_stage2']}", 
+                leave=False
+            ))
 
-            # Debug: Inspect label values
-            labels_cpu = labels.cpu()
-            min_label = labels_cpu[labels_cpu != -100].min().item()
-            max_label = labels_cpu[labels_cpu != -100].max().item()
-            student_outputs = student_model(input_ids=input_ids, labels=labels)
-            student_logits = student_outputs.logits
-            vocab_size = student_logits.size(-1)  # Use the size from logits directly
+            # If resuming mid-epoch, continue from the last batch
+            if epoch == start_epoch and start_batch > 0:
+                for _ in range(start_batch):
+                    try:
+                        next(train_loader_iter)
+                    except StopIteration:
+                        break
+                current_batch = start_batch  # Set the current batch to start_batch
 
-            # logging.info(f"Label value range: min={min_label}, max={max_label}, vocab_size={vocab_size}")
+            for batch_idx, batch in enumerate(train_loader_iter, start=1):
+                # Log if NaNs are in input data or labels
+                if not torch.isfinite(batch['input_ids']).all():
+                    logging.warning(f"NaN found in input_ids at Epoch {epoch + 1}, Batch {batch_idx}")
+                if not torch.isfinite(batch['labels']).all():
+                    logging.warning(f"NaN found in labels at Epoch {epoch + 1}, Batch {batch_idx}")
+                if epoch == start_epoch and current_batch < start_batch:
+                    current_batch += 1
+                    continue
 
-            if min_label < -100 or max_label >= vocab_size:
-                logging.error(f"Invalid label values detected: min={min_label}, max={max_label}, vocab_size={vocab_size}")                
-                continue  # Skip this batch
-
-            global_batch_count += 1  # Increment global batch count
-
-            optimizer.zero_grad()
-
-            # Forward pass through teacher model
-            with torch.no_grad():
-                teacher_outputs = teacher_model(input_ids=input_ids.to("cpu"), labels=labels.to("cpu"))
-                teacher_logits = teacher_outputs.logits.to(device)
-
-            # Forward pass through student model
-            
-            
-
-            # Compute loss (distillation + label loss)
-            loss, ce_loss = distillation_loss_fn(
-                student_logits, 
-                teacher_logits, 
-                labels
-            )
-
-            # After computing loss
-            if torch.isnan(loss):
-                logging.warning(f"NaN loss at Epoch {epoch + 1}, Batch {batch_idx}. Skipping batch.")
-                continue
-
-            # Backward pass with gradient accumulation
-            loss = loss / accumulation_steps
-            loss.backward()
-            epoch_loss += loss.item()
-            batch_count += 1
-
-            # Gradient Accumulation Step
-            if batch_idx % accumulation_steps == 0:
-                # Gradient clipping
-                torch.nn.utils.clip_grad_norm_(student_model.parameters(), config["training"]["max_norm"])
                 
-                optimizer.step()
-                scheduler.step()
+                input_ids = batch['input_ids'].to(device)
+                labels = batch['labels'].to(device)
+
+                # Debug: Inspect label values
+                labels_cpu = labels.cpu()
+                min_label = labels_cpu[labels_cpu != -100].min().item()
+                max_label = labels_cpu[labels_cpu != -100].max().item()
+                student_outputs = student_model(input_ids=input_ids, labels=labels)
+                student_logits = student_outputs.logits
+                vocab_size = student_logits.size(-1)  # Use the size from logits directly
+
+                # logging.info(f"Label value range: min={min_label}, max={max_label}, vocab_size={vocab_size}")
+
+                if min_label < -100 or max_label >= vocab_size:
+                    logging.error(f"Invalid label values detected: min={min_label}, max={max_label}, vocab_size={vocab_size}")                
+                    continue  # Skip this batch
+
                 optimizer.zero_grad()
 
-            # Logging and validation at specified intervals
-            if global_batch_count % config["training"]["validation_frequency"] == 0:
-                avg_val_loss, accuracy = validate(
-                    student_model,
-                    tokenizer,
-                    val_loader,
-                    device,
-                    pad_token_id,
-                    sample_fraction=config["validation"]["val_percent"],  # Use 5% of the validation data
-                )
-                logging.info(
-                    f"Epoch {epoch + 1}, Batch {global_batch_count}, "
-                    f"Training Loss: {epoch_loss / batch_count:.4f}, "
-                    f"Validation Loss: {avg_val_loss:.4f}, "
-                    f"Accuracy: {accuracy:.4f}"
-                )
-            
-                # Log metrics to TensorBoard
-                writer.add_scalar('Loss/Training', epoch_loss / batch_count, global_batch_count)
-                writer.add_scalar('Loss/Validation', avg_val_loss, global_batch_count)
-                writer.add_scalar('Metrics/Accuracy', accuracy, global_batch_count)
+                # Forward pass through teacher model
+                with torch.no_grad():
+                    teacher_outputs = teacher_model(input_ids=input_ids.to("cpu"), labels=labels.to("cpu"))
+                    teacher_logits = teacher_outputs.logits.to(device)
+
+                # Forward pass through student model
                 
-                # Reset epoch_loss and batch_count after logging
-                epoch_loss = 0.0
-                batch_count = 0
+                
 
-            # Checkpointing logic
-            if global_batch_count % config["checkpointing"]["checkpoint_frequency_batches"] == 0:
-                save_checkpoint(student_model, optimizer, scheduler, epoch, global_batch_count, checkpoint_dir, is_epoch_end=False, config=config)
-            if global_batch_count % config["checkpointing"]["checkpoint_frequency_milestone"] == 0:  # Milestone checkpoint
-                checkpoint_milestone = os.path.join(
-                    checkpoint_dir, f"checkpoint-epoch{epoch + 1}-batch{global_batch_count}.pth"
+                # Compute loss (distillation + label loss)
+                loss, ce_loss = distillation_loss_fn(
+                    student_logits, 
+                    teacher_logits, 
+                    labels
                 )
-                save_checkpoint(student_model, optimizer, scheduler, epoch, global_batch_count, checkpoint_dir, is_epoch_end=False, custom_path=checkpoint_milestone, config=config)                
-                logging.info(f"Milestone checkpoint saved to {checkpoint_milestone}")
 
-        # End of epoch checkpoint
-        save_checkpoint(student_model, optimizer, scheduler, epoch, batch_idx if batch_idx >=0 else 0, checkpoint_dir, is_epoch_end=True,config=config)
+                # After computing loss
+                if torch.isnan(loss):
+                    logging.warning(f"NaN loss at Epoch {epoch + 1}, Batch {batch_idx}. Skipping batch.")
+                    continue
 
-        # Log the average loss for this epoch
-        if batch_count > 0:
-            avg_epoch_loss = epoch_loss / batch_count
-        else:
-            avg_epoch_loss = 0.0
-        logging.info(f"Epoch {epoch + 1} completed. Average Training Loss: {avg_epoch_loss:.4f}")
+                # Backward pass with gradient accumulation
+                loss = loss / accumulation_steps
+                loss.backward()
+                epoch_loss += loss.item()
+                batch_count += 1
+                global_batch_count += 1  # Increment global batch count here
+
+                # Gradient Accumulation Step
+                if batch_idx % accumulation_steps == 0:
+                    # Gradient clipping
+                    torch.nn.utils.clip_grad_norm_(student_model.parameters(), config["training"]["max_norm"])
+                    
+                    optimizer.step()
+                    scheduler.step()
+                    optimizer.zero_grad()
+
+                # Logging and validation at specified intervals
+                if global_batch_count % config["training"]["validation_frequency"] == 0:
+                    avg_val_loss, accuracy = validate(
+                        student_model,
+                        tokenizer,
+                        val_loader,
+                        device,
+                        pad_token_id,
+                        sample_fraction=config["validation"]["val_percent"],  # Use 5% of the validation data
+                    )
+                    logging.info(
+                        f"Epoch {epoch + 1}, Batch {global_batch_count}, "
+                        f"Training Loss: {epoch_loss / batch_count:.4f}, "
+                        f"Validation Loss: {avg_val_loss:.4f}, "
+                        f"Accuracy: {accuracy:.4f}"
+                    )
+                
+                    # Log metrics to TensorBoard
+                    writer.add_scalar('Loss/Training', epoch_loss / batch_count, global_batch_count)
+                    writer.add_scalar('Loss/Validation', avg_val_loss, global_batch_count)
+                    writer.add_scalar('Metrics/Accuracy', accuracy, global_batch_count)
+                    
+                    # Reset epoch_loss and batch_count after logging
+                    epoch_loss = 0.0
+                    batch_count = 0
+
+                # Checkpointing logic
+                if global_batch_count % config["checkpointing"]["checkpoint_frequency_batches"] == 0:
+                    save_checkpoint(
+                        student_model, 
+                        optimizer, 
+                        scheduler, 
+                        epoch, 
+                        batch_idx if batch_idx>=0 else 0,
+                        global_batch_count, 
+                        checkpoint_dir, 
+                        is_epoch_end=False, 
+                        config=config)
+                if global_batch_count % config["checkpointing"]["checkpoint_frequency_milestone"] == 0:  # Milestone checkpoint
+                    checkpoint_milestone = os.path.join(
+                        checkpoint_dir, f"checkpoint-epoch{epoch + 1}-batch{global_batch_count}.pth"
+                    )
+                    save_checkpoint(
+                        student_model, 
+                        optimizer, 
+                        scheduler, 
+                        epoch, 
+                        batch_idx if batch_idx>=0 else 0,
+                        global_batch_count, 
+                        checkpoint_dir, 
+                        is_epoch_end=False, 
+                        custom_path=checkpoint_milestone, 
+                        config=config)                
+                    logging.info(f"Milestone checkpoint saved to {checkpoint_milestone}")
+
+            # Log the average loss for this epoch
+            if batch_count > 0:
+                # Save checkpoint marking epoch as completed
+                save_checkpoint(
+                    student_model, 
+                    optimizer, 
+                    scheduler,
+                    epoch, 
+                    batch_idx if batch_idx >= 0 else 0, 
+                    global_batch_count,
+                    checkpoint_dir, 
+                    is_epoch_end=True, 
+                    config=config
+                )
+
+                # Log the average loss for this epoch
+                avg_epoch_loss = epoch_loss / batch_count
+                logging.info(f"Epoch {epoch + 1} completed. Average Training Loss: {avg_epoch_loss:.4f}")
+            else:
+                logging.info(f"Epoch {epoch + 1} had no batches processed. Not marking epoch as completed.")
+                # Save checkpoint without marking epoch as completed
+                save_checkpoint(
+                    student_model, 
+                    optimizer, 
+                    scheduler,
+                    epoch, 
+                    batch_idx if batch_idx >= 0 else 0, 
+                    global_batch_count,
+                    checkpoint_dir, 
+                    is_epoch_end=False, 
+                    config=config
+                )
+    except KeyboardInterrupt:
+        logging.info("Training interrupted by user. Saving checkpoint...")
+        # Save the current state with is_epoch_end=False
+        save_checkpoint(
+            student_model, 
+            optimizer, 
+            scheduler,
+            epoch, 
+            batch_idx if batch_idx >= 0 else 0, 
+            global_batch_count,
+            checkpoint_dir, 
+            is_epoch_end=False, 
+            config=config
+        )
+        logging.info("Checkpoint saved. Exiting.")
+        return
 
     # Save the final trained student model
     final_model_path = os.path.join(checkpoint_dir, "final_model")
